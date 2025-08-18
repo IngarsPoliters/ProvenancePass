@@ -25,9 +25,9 @@
     "zod": "^3.22.4",
     "@noble/ed25519": "^2.0.0",
     "fast-glob": "^3.3.2",
-    "ajv": "^8.12.0",
-    "ajv-formats": "^2.1.1",
-    "undici": "^6.6.2"
+    "undici": "^6.6.2",
+    "ajv": "^8.17.0",
+    "ajv-formats": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

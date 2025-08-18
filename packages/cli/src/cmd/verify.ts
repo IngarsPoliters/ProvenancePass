@@ -1,8 +1,8 @@
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, basename } from 'path';
-import { request } from '../lib/temp-deps.js';
-import glob from '../lib/temp-deps.js';
+import { request } from 'undici';
+import fg from 'fast-glob';
 import { sha256File } from '../lib/hash.js';
 import { verifyPassport } from '../lib/sign.js';
 import { validatePassport } from '../lib/schema.js';
@@ -73,7 +73,7 @@ async function verifyCommand(inputPath: string | undefined, options: VerifyOptio
 
   if (globPattern) {
     console.log(`🔍 Searching for files matching: ${globPattern}`);
-    filesToVerify = await glob(globPattern, { onlyFiles: true });
+    filesToVerify = await fg(globPattern, { onlyFiles: true });
     if (filesToVerify.length === 0) {
       console.log('⚠️  No files found matching the pattern');
       return;

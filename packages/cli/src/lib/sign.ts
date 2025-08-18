@@ -1,4 +1,4 @@
-import { ed25519 } from './temp-deps.js';
+import * as ed25519 from '@noble/ed25519';
 import { sha256String } from './hash.js';
 
 export interface KeyPair {
