@@ -1,5 +1,7 @@
 # Provenance Passport v0.1 Specification
 
+**Note**: Signatures are computed over the JCS-canonicalized receipt (RFC 8785). See the Canonicalization section below for details.
+
 ## Overview
 
 The Provenance Passport (PP) v0.1 defines a standardized format for recording and verifying the provenance of digital artifacts. It provides cryptographically signed metadata that documents an artifact's creation, processing history, and verification status.
@@ -46,7 +48,9 @@ All passports are digitally signed using Ed25519 to ensure authenticity and prev
     "mime": "application/pdf",
     "name": "contract-final.pdf",
     "size": 45678,
-    "created_at": "2024-01-15T14:30:00.000Z"
+    "created_at": "2024-01-15T14:30:00.000Z",
+    "hash_binding": "bytes",
+    "byte_size": 123456
   },
   "inputs": [
     {
@@ -67,6 +71,8 @@ All passports are digitally signed using Ed25519 to ensure authenticity and prev
       "tool": "pandoc",
       "version": "3.1.2",
       "timestamp": "2024-01-15T14:28:00.000Z",
+      "started_at": "2024-01-15T14:27:45.000Z",
+      "ended_at": "2024-01-15T14:28:00.000Z",
       "actor": {
         "type": "software",
         "id": "build-agent-7"
@@ -105,7 +111,8 @@ All passports are digitally signed using Ed25519 to ensure authenticity and prev
   "signature": {
     "algo": "ed25519",
     "public_key": "a1b2c3d4e5f67890123456789012345678901234567890123456789012345678",
-    "signature": "1a2b3c4d5e6f78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012"
+    "signature": "1a2b3c4d5e6f78901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012",
+    "key_id": "ppk_8f2c91a3"
   }
 }
 ```
@@ -160,10 +167,14 @@ The `signature` object provides cryptographic authenticity:
 - **public_key**: Verifier's public key
 - **signature**: Digital signature over the passport content (excluding the signature field itself)
 
+## Canonicalization
+
+Signatures are computed over JCS-canonicalized JSON (RFC 8785) to ensure deterministic serialization. If a JCS library is not available in the CLI implementation, an equivalent stable canonicalization compatible with JCS will be used.
+
 ## Signing Process
 
 1. Create the passport JSON with all fields except `signature`
-2. Canonicalize the JSON (deterministic serialization)
+2. Canonicalize the JSON using JCS (RFC 8785)
 3. Generate Ed25519 signature over the canonical bytes
 4. Add the `signature` object with algorithm, public key, and signature
 5. The final passport includes the signature for verification

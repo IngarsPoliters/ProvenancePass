@@ -30,8 +30,8 @@
         },
         "mime": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&\\-\\^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\\-\\^_.]*$",
-          "description": "MIME type of the artifact"
+          "pattern": "^[a-z0-9.+-]+/[a-z0-9.+-]+$",
+          "errorMessage": "Invalid MIME type"
         },
         "name": {
           "type": "string",
@@ -46,6 +46,15 @@
           "type": "string",
           "format": "date-time",
           "description": "ISO8601 timestamp when artifact was created (UTC)"
+        },
+        "hash_binding": {
+          "type": "string",
+          "enum": ["bytes", "c2pa-claim"],
+          "default": "bytes"
+        },
+        "byte_size": {
+          "type": "integer",
+          "minimum": 0
         }
       },
       "additionalProperties": false
@@ -65,6 +74,20 @@
       "items": {
         "type": "object",
         "description": "Processing step",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "pattern": "^[a-z0-9_.:-]+$"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
         "additionalProperties": true
       }
     },
@@ -104,6 +127,11 @@
           "type": "string",
           "pattern": "^[a-f0-9]{128}$",
           "description": "Ed25519 signature (128 hex characters)"
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 64
         }
       },
       "additionalProperties": false
