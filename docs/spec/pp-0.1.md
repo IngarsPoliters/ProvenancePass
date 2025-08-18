@@ -2,6 +2,12 @@
 
 **Note**: Signatures are computed over the JCS-canonicalized receipt (RFC 8785). See the Canonicalization section below for details.
 
+## Related Documentation
+
+- **[Signing and Revocation](signing-and-revocation.md)**: Detailed cryptographic implementation, key management, and revocation procedures
+- **[Threat Model](threat-model.md)**: Security analysis using STRIDE methodology and mitigation strategies  
+- **[Privacy Guidelines](../product/privacy.md)**: Data handling policies, user controls, and compliance considerations
+
 ## Overview
 
 The Provenance Passport (PP) v0.1 defines a standardized format for recording and verifying the provenance of digital artifacts. It provides cryptographically signed metadata that documents an artifact's creation, processing history, and verification status.
