@@ -1,0 +1,22 @@
+{
+  "name": "provenance-passport-py",
+  "version": "0.1.0",
+  "description": "Python wrapper for Provenance Passport",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "python -m build",
+    "dev": "python -m pip install -e .",
+    "test": "python -m pytest",
+    "lint": "python -m flake8 src",
+    "format": "python -m black src",
+    "clean": "rm -rf dist build *.egg-info"
+  },
+  "keywords": [
+    "python",
+    "provenance",
+    "verification"
+  ],
+  "license": "Apache-2.0"
+}
