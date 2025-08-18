@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/IngarsPoliters/ProvenancePass/docs/spec/pp-0.1.schema.json",
+  "title": "Provenance Passport v0.1",
+  "description": "Schema for Provenance Passport v0.1 specification",
+  "type": "object",
+  "required": [
+    "version",
+    "artifact",
+    "signature"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "0.1",
+      "description": "Specification version"
+    },
+    "artifact": {
+      "type": "object",
+      "required": [
+        "sha256",
+        "mime",
+        "created_at"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 digest of the artifact"
+        },
+        "mime": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9!#$&\\-\\^_]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\\-\\^_.]*$",
+          "description": "MIME type of the artifact"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for the artifact"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Size of the artifact in bytes"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO8601 timestamp when artifact was created (UTC)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputs": {
+      "type": "array",
+      "description": "Array of input artifacts or sources used",
+      "items": {
+        "type": "object",
+        "description": "Input artifact or source",
+        "additionalProperties": true
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Array of processing steps applied",
+      "items": {
+        "type": "object",
+        "description": "Processing step",
+        "additionalProperties": true
+      }
+    },
+    "review": {
+      "type": "object",
+      "description": "Human or automated review information",
+      "additionalProperties": true
+    },
+    "policy_checks": {
+      "type": "array",
+      "description": "Array of policy validation results",
+      "items": {
+        "type": "object",
+        "description": "Policy validation result",
+        "additionalProperties": true
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": [
+        "algo",
+        "public_key",
+        "signature"
+      ],
+      "properties": {
+        "algo": {
+          "type": "string",
+          "const": "ed25519",
+          "description": "Signature algorithm"
+        },
+        "public_key": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Ed25519 public key (64 hex characters)"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{128}$",
+          "description": "Ed25519 signature (128 hex characters)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
