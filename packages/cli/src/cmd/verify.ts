@@ -55,7 +55,7 @@ export function createVerifyCommand(): Command {
     .option('--trust-bundle <path>', 'Additional trusted public keys file')
     .option('--fail-on-missing', 'Exit with error if passport is missing during verification')
     .option('--revocations <url>', 'Override revocation list URL')
-    .option('--revocation-pubkey <path>', 'Public key file for signed revocation feed verification')
+    .option('--revocation-pubkey <hex>', 'Public key hex or file path for signed revocation feed verification')
     .option('--manifest <url>', 'Manifest URL for DOCX pointer fallback')
     .action(async (path: string | undefined, options: VerifyOptions) => {
       try {
@@ -354,7 +354,7 @@ function findPassportFile(filePath: string): string | null {
   return null;
 }
 
-async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkeyPath?: string): Promise<Set<string> | null> {
+async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkey?: string): Promise<Set<string> | null> {
   const url = revocationsUrl || 'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json';
   
   try {
@@ -369,15 +369,26 @@ async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkeyPath?: 
     const revocations = JSON.parse(body);
     
     // If a public key is provided, verify the signature
-    if (revocationPubkeyPath) {
+    if (revocationPubkey) {
       if (!revocations.signature) {
         console.warn('⚠️  Warning: Revocation feed signature required but not found');
         return null;
       }
       
       try {
-        const pubkeyContent = readFileSync(revocationPubkeyPath, 'utf-8');
-        const publicKey = pubkeyContent.trim();
+        let publicKey: string;
+        
+        // Check if it's a hex string (64 chars) or a file path
+        if (revocationPubkey.length === 64 && /^[0-9a-fA-F]+$/.test(revocationPubkey)) {
+          // It's a hex string
+          publicKey = revocationPubkey;
+        } else if (existsSync(revocationPubkey)) {
+          // It's a file path
+          const pubkeyContent = readFileSync(revocationPubkey, 'utf-8');
+          publicKey = pubkeyContent.trim();
+        } else {
+          throw new Error(`Public key must be 64-character hex string or valid file path, got: ${revocationPubkey}`);
+        }
         
         // Create canonical version without signature for verification
         const { signature, ...dataToVerify } = revocations;
@@ -391,6 +402,8 @@ async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkeyPath?: 
           console.warn('⚠️  Warning: Revocation feed signature verification failed');
           return null;
         }
+        
+        console.log('🔒 Revocation feed signature verified successfully');
       } catch (error) {
         console.warn(`⚠️  Warning: Failed to verify revocation feed signature: ${error instanceof Error ? error.message : String(error)}`);
         return null;

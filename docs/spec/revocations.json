@@ -1,4 +1,31 @@
 {
-  "revoked_keys": [],
-  "last_updated": "2025-08-19T00:00:00Z"
+  "version": "1.0",
+  "last_updated": "2025-08-19T00:00:00Z",
+  "authority": "ProvenancePass Development Team",
+  "feed_url": "https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json",
+  "revoked_keys": [
+    {
+      "key_id": "compromised-test-key-001",
+      "revoked_at": "2025-08-19T10:30:00Z",
+      "reason": "Key compromise - testing example",
+      "severity": "high",
+      "description": "Example compromised key for testing revocation flows"
+    },
+    {
+      "key_id": "expired-legacy-key-002", 
+      "revoked_at": "2025-08-19T09:15:00Z",
+      "reason": "Key expiration",
+      "severity": "medium",
+      "description": "Legacy key that has exceeded its intended lifetime"
+    },
+    {
+      "key_id": "malicious-actor-key-003",
+      "revoked_at": "2025-08-19T08:45:00Z", 
+      "reason": "Malicious usage detected",
+      "severity": "critical",
+      "description": "Key used for signing malicious artifacts"
+    }
+  ],
+  "signature_key_id": "revocation-authority-2025",
+  "next_update": "2025-08-20T00:00:00Z"
 }
