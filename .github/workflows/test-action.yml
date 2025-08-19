@@ -1,0 +1,308 @@
+name: Test Provenance Passport Action
+
+on:
+  push:
+    paths:
+      - 'packages/actions/**'
+      - '.github/workflows/test-action.yml'
+  pull_request:
+    paths:
+      - 'packages/actions/**'
+      - '.github/workflows/test-action.yml'
+  workflow_dispatch:
+
+jobs:
+  test-verify-mode:
+    name: Test Verify Mode
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            test_files: 'test/samples/*.{pdf,png,jpg}'
+          - os: macos-latest  
+            test_files: 'test/samples/*.{pdf,png}'
+          - os: windows-latest
+            test_files: 'test/samples/*.pdf'
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Create Test Files
+        shell: bash
+        run: |
+          mkdir -p test/samples
+          echo "Test PDF content" > test/samples/document.pdf
+          echo "Test PNG binary" > test/samples/image.png
+          echo "Test JPG binary" > test/samples/photo.jpg
+        
+      - name: Test Verify Mode (Should Pass with Warnings)
+        id: verify-test
+        uses: ./packages/actions
+        continue-on-error: true
+        with:
+          mode: verify
+          glob: ${{ matrix.test_files }}
+          
+      - name: Check Verify Results
+        shell: bash
+        run: |
+          echo "Total files: ${{ steps.verify-test.outputs.total }}"
+          echo "Passed: ${{ steps.verify-test.outputs.passed }}"
+          echo "Failed: ${{ steps.verify-test.outputs.failed }}"
+          echo "Warnings: ${{ steps.verify-test.outputs.warnings }}"
+          
+          # Should have found files but with warnings (no passports)
+          if [[ "${{ steps.verify-test.outputs.total }}" == "0" ]]; then
+            echo "❌ No files found for verification"
+            exit 1
+          fi
+
+  test-wrap-mode:
+    name: Test Wrap Mode  
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        embed_c2pa: [true, false]
+        exclude:
+          # c2patool not available on Windows
+          - os: windows-latest
+            embed_c2pa: true
+            
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Create Build Artifacts
+        run: |
+          mkdir -p build/dist
+          echo "console.log('app');" > build/dist/app.js
+          echo "body { color: red; }" > build/dist/styles.css
+          echo "Binary content" > build/dist/image.png
+        
+      - name: Test Wrap Mode
+        id: wrap-test
+        uses: ./packages/actions
+        with:
+          mode: wrap
+          glob: 'build/**/*.{js,css,png}'
+          embed_c2pa: ${{ matrix.embed_c2pa }}
+          
+      - name: Check Wrap Results
+        run: |
+          echo "Wrapped files: ${{ steps.wrap-test.outputs.wrapped_files }}"
+          echo "Passport files: ${{ steps.wrap-test.outputs.passport_files }}"
+          echo "Embedded files: ${{ steps.wrap-test.outputs.embedded_files }}"
+          
+          # Should have created passports
+          if [[ "${{ steps.wrap-test.outputs.wrapped_files }}" == "0" ]]; then
+            echo "❌ No files were wrapped"
+            exit 1
+          fi
+          
+          # Check if passport files exist
+          IFS=',' read -ra PASSPORT_FILES <<< "${{ steps.wrap-test.outputs.passport_files }}"
+          for passport_file in "${PASSPORT_FILES[@]}"; do
+            if [[ ! -f "$passport_file" ]]; then
+              echo "❌ Passport file not found: $passport_file"
+              exit 1
+            fi
+            echo "✅ Found passport: $passport_file"
+          done
+        
+      - name: Upload Wrapped Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wrapped-${{ matrix.os }}-c2pa${{ matrix.embed_c2pa }}
+          path: |
+            build/
+            **/*.passport.json
+
+  test-wrap-command:
+    name: Test Wrap Command
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Test Command Wrapping
+        id: wrap-command
+        uses: ./packages/actions
+        with:
+          mode: wrap
+          command: "echo 'Hello World' > output.txt && ls -la > filelist.txt"
+          output_dir: "wrapped-output"
+          
+      - name: Check Command Results
+        run: |
+          echo "Wrapped files: ${{ steps.wrap-command.outputs.wrapped_files }}"
+          
+          # Should have wrapped the command
+          if [[ "${{ steps.wrap-command.outputs.wrapped_files }}" == "0" ]]; then
+            echo "❌ Command was not wrapped"
+            exit 1
+          fi
+          
+          # Check if output files exist
+          if [[ ! -f "wrapped-output/output.txt" ]]; then
+            echo "❌ Command output not found"
+            exit 1
+          fi
+          
+          echo "✅ Command wrapping successful"
+
+  test-both-mode:
+    name: Test Both Mode (Wrap + Verify)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Create Test Files
+        run: |
+          mkdir -p artifacts
+          echo "Application binary" > artifacts/app.bin
+          echo "Config file" > artifacts/config.json
+        
+      - name: Test Both Mode
+        id: both-test
+        uses: ./packages/actions
+        with:
+          mode: both
+          glob: 'artifacts/**/*'
+          embed_c2pa: false
+          
+      - name: Check Both Mode Results
+        run: |
+          echo "=== Wrap Results ==="
+          echo "Wrapped files: ${{ steps.both-test.outputs.wrapped_files }}"
+          echo "Passport files: ${{ steps.both-test.outputs.passport_files }}"
+          
+          echo "=== Verify Results ==="
+          echo "Total checked: ${{ steps.both-test.outputs.total }}"
+          echo "Passed: ${{ steps.both-test.outputs.passed }}"
+          echo "Failed: ${{ steps.both-test.outputs.failed }}"
+          echo "Success: ${{ steps.both-test.outputs.success }}"
+          
+          # Should have wrapped files
+          if [[ "${{ steps.both-test.outputs.wrapped_files }}" == "0" ]]; then
+            echo "❌ No files were wrapped in both mode"
+            exit 1
+          fi
+          
+          # Should have verified successfully (since we just created the passports)
+          if [[ "${{ steps.both-test.outputs.success }}" != "true" ]]; then
+            echo "❌ Verification failed in both mode"
+            exit 1
+          fi
+          
+          echo "✅ Both mode successful"
+
+  test-custom-inputs:
+    name: Test Custom Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout  
+        uses: actions/checkout@v4
+        
+      - name: Setup Custom Revocation URL
+        run: |
+          # Create a mock revocation service
+          mkdir -p mock-server
+          echo '{"revoked_keys": [], "version": "1.0"}' > mock-server/revocations.json
+          
+      - name: Create Files with Existing Passports
+        run: |
+          mkdir -p verified-docs
+          echo "Document content" > verified-docs/report.pdf
+          # Create a mock passport (this would normally be created by pp wrap)
+          echo '{"version": "1.0", "signature": "mock"}' > verified-docs/report.pdf.passport.json
+        
+      - name: Test Custom Revocations URL
+        uses: ./packages/actions  
+        with:
+          mode: verify
+          glob: 'verified-docs/**/*.pdf'
+          revocations_url: 'https://data.provenancepass.com/revocations.json'
+          
+  test-error-handling:
+    name: Test Error Conditions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Test No Files Found
+        id: no-files
+        uses: ./packages/actions
+        continue-on-error: true
+        with:
+          mode: verify
+          glob: 'nonexistent/**/*.xyz'
+          
+      - name: Test Invalid Key Path
+        id: invalid-key
+        uses: ./packages/actions
+        continue-on-error: true
+        with:
+          mode: wrap
+          glob: 'README.md'
+          keyfile: 'nonexistent-key.pem'
+
+  integration-test:
+    name: Integration Test - Full Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Simulate Build Process
+        run: |
+          mkdir -p release/{bin,docs,assets}
+          echo "#!/bin/bash\necho 'App v1.0'" > release/bin/myapp
+          chmod +x release/bin/myapp
+          echo "# Documentation" > release/docs/README.md  
+          echo "Logo content" > release/assets/logo.png
+        
+      - name: Create Provenance for Release
+        id: create-provenance
+        uses: ./packages/actions
+        with:
+          mode: wrap
+          glob: 'release/**/*'
+          embed_c2pa: false
+          
+      - name: Verify Created Provenance
+        id: verify-provenance  
+        uses: ./packages/actions
+        with:
+          mode: verify
+          glob: 'release/**/*'
+          
+      - name: Integration Check
+        run: |
+          echo "=== Integration Test Results ==="
+          echo "Created passports: ${{ steps.create-provenance.outputs.wrapped_files }}"
+          echo "Verified files: ${{ steps.verify-provenance.outputs.total }}"
+          echo "Verification passed: ${{ steps.verify-provenance.outputs.passed }}"
+          echo "Overall success: ${{ steps.verify-provenance.outputs.success }}"
+          
+          # All files should be wrapped and verified
+          if [[ "${{ steps.verify-provenance.outputs.success }}" != "true" ]]; then
+            echo "❌ Integration test failed - verification unsuccessful"
+            exit 1
+          fi
+          
+          echo "✅ Integration test passed - full wrap+verify cycle successful"
+        
+      - name: Create Release Summary
+        run: |
+          echo "## 🔐 Release Provenance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Files wrapped**: ${{ steps.create-provenance.outputs.wrapped_files }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Files verified**: ${{ steps.verify-provenance.outputs.passed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Passport files**: ${{ steps.create-provenance.outputs.passport_files }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ All checks passed" >> $GITHUB_STEP_SUMMARY

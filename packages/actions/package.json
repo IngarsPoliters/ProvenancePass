@@ -1,8 +1,8 @@
 {
-  "name": "verify-passport",
+  "name": "provenance-passport-action",
   "version": "0.1.0",
-  "description": "GitHub Action: verify-passport",
-  "main": "dist/index.js",
+  "description": "GitHub Action: Create and verify cryptographic provenance for digital artifacts",
+  "main": "action.yml",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -28,8 +28,12 @@
   },
   "keywords": [
     "github-action",
+    "provenance",
     "verification",
-    "provenance"
+    "cryptographic-signatures",
+    "c2pa",
+    "digital-provenance",
+    "build-attestation"
   ],
   "license": "Apache-2.0"
 }

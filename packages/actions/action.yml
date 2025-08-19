@@ -1,11 +1,17 @@
-name: 'Verify Provenance Passport'
-description: 'Verify cryptographic provenance of artifacts using Provenance Passport'
+name: 'Provenance Passport'
+description: 'Create and verify cryptographic provenance for digital artifacts using Provenance Passport'
 author: 'ProvenancePass'
 branding:
   icon: 'shield-check'
   color: 'green'
 
 inputs:
+  mode:
+    description: 'Action mode: "verify" to verify existing passports, "wrap" to create new ones, "both" for wrap then verify'
+    required: false
+    default: 'verify'
+  
+  # Verification inputs
   glob:
     description: 'Glob pattern for files to verify'
     required: false
@@ -17,8 +23,25 @@ inputs:
   manifest_url:
     description: 'Manifest URL for DOCX pointer fallback'
     required: false
+  
+  # Wrapping inputs
+  command:
+    description: 'Command to wrap with provenance (for mode: wrap or both)'
+    required: false
+  keyfile:
+    description: 'Path to private key file for signing'
+    required: false
+  output_dir:
+    description: 'Directory to output wrapped files (default: current directory)'
+    required: false
+    default: '.'
+  embed_c2pa:
+    description: 'Whether to embed passport into C2PA metadata (true/false)'
+    required: false
+    default: 'false'
 
 outputs:
+  # Verification outputs
   total:
     description: 'Total number of files checked'
   passed:
@@ -29,6 +52,14 @@ outputs:
     description: 'Number of files with warnings'
   success:
     description: 'Whether all verifications passed'
+  
+  # Wrapping outputs
+  wrapped_files:
+    description: 'Number of files wrapped with provenance'
+  passport_files:
+    description: 'Comma-separated list of created passport files'
+  embedded_files:
+    description: 'Number of files with embedded C2PA metadata'
 
 runs:
   using: 'composite'
@@ -42,7 +73,7 @@ runs:
       shell: bash
       run: npm install -g @provenancepass/cli
       
-    - name: Install c2patool (Linux)
+    - name: Install c2patool (Linux/macOS)
       shell: bash
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then
@@ -52,12 +83,77 @@ runs:
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
           brew install c2patool
         else
-          echo "::warning::c2patool installation not supported on $RUNNER_OS, will fall back to sidecar verification"
+          echo "::warning::c2patool installation not supported on $RUNNER_OS, will fall back to sidecar operations"
+        fi
+    
+    - name: Generate Key (if needed)
+      shell: bash
+      run: |
+        if [[ "${{ inputs.mode }}" == "wrap" || "${{ inputs.mode }}" == "both" ]]; then
+          if [[ -z "${{ inputs.keyfile }}" ]]; then
+            echo "No keyfile provided, generating temporary key..."
+            pp keygen --out-file temp-key.pem
+            echo "KEYFILE_PATH=temp-key.pem" >> $GITHUB_ENV
+          else
+            echo "KEYFILE_PATH=${{ inputs.keyfile }}" >> $GITHUB_ENV
+          fi
+        fi
+        
+    - name: Wrap Files with Provenance
+      shell: bash
+      if: inputs.mode == 'wrap' || inputs.mode == 'both'
+      run: |
+        echo "🔐 Creating provenance passports..."
+        
+        if [[ -n "${{ inputs.command }}" ]]; then
+          # Wrap a command
+          cmd="pp wrap --run \"${{ inputs.command }}\" --keyfile \"$KEYFILE_PATH\" --output-dir \"${{ inputs.output_dir }}\""
+          echo "Running: $cmd"
+          eval "$cmd"
+          echo "wrapped_files=1" >> $GITHUB_OUTPUT
+        else
+          # Wrap existing files
+          wrapped_count=0
+          passport_files=()
+          embedded_count=0
+          
+          # Find files matching glob pattern
+          shopt -s globstar nullglob
+          for file in ${{ inputs.glob }}; do
+            if [[ -f "$file" ]]; then
+              echo "Wrapping: $file"
+              
+              # Create passport
+              passport_file="${file}.passport.json"
+              pp wrap --file "$file" --keyfile "$KEYFILE_PATH" --output "$passport_file"
+              passport_files+=("$passport_file")
+              wrapped_count=$((wrapped_count + 1))
+              
+              # Embed in C2PA if requested
+              if [[ "${{ inputs.embed_c2pa }}" == "true" ]]; then
+                echo "Embedding C2PA metadata in $file"
+                pp embed --file "$file" --passport "$passport_file" --output "$file"
+                embedded_count=$((embedded_count + 1))
+              fi
+            fi
+          done
+          
+          echo "wrapped_files=$wrapped_count" >> $GITHUB_OUTPUT
+          echo "passport_files=$(IFS=','; echo "${passport_files[*]}")" >> $GITHUB_OUTPUT  
+          echo "embedded_files=$embedded_count" >> $GITHUB_OUTPUT
+          
+          echo "✅ Created $wrapped_count passport files"
+          if [[ $embedded_count -gt 0 ]]; then
+            echo "🏷️ Embedded C2PA metadata in $embedded_count files"
+          fi
         fi
         
     - name: Verify Passports
       shell: bash
+      if: inputs.mode == 'verify' || inputs.mode == 'both'
       run: |
+        echo "🔍 Verifying provenance passports..."
+        
         cmd="pp verify --glob '${{ inputs.glob }}' --json"
         
         if [[ -n '${{ inputs.revocations_url }}' ]]; then
@@ -73,12 +169,19 @@ runs:
         
     - name: Process Results
       uses: actions/github-script@v7
+      if: inputs.mode == 'verify' || inputs.mode == 'both'
       with:
         script: |
           const fs = require('fs');
           const core = require('@actions/core');
           
           try {
+            // Only process verification results if verification was run
+            if (!fs.existsSync('verification_results.json')) {
+              core.info('No verification results file found, skipping verification processing');
+              return;
+            }
+            
             const resultsContent = fs.readFileSync('verification_results.json', 'utf-8');
             const verification = JSON.parse(resultsContent);
             const { summary, results } = verification;
