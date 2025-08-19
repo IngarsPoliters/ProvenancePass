@@ -61,7 +61,7 @@ generate_key() {
     fi
     
     log "Generating test signing key: $key_id"
-    pp keygen --output "$key_path" --key-id "$key_id"
+    pp keygen --out "$key_path"
     success "Generated key: $key_path"
 }
 
@@ -133,7 +133,7 @@ generate_sidecar() {
     for file in "$dir/sidecar"/*; do
         if [[ -f "$file" ]]; then
             log "Creating passport for $(basename "$file")"
-            pp wrap "$file" --sign "$key_path" --output "$file.passport.json"
+            pp wrap --in "$file" --out "$file" --sign "$key_path" --step "Test vector generation"
             success "Created: $file.passport.json"
         fi
     done

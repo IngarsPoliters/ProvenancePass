@@ -1,1 +1,0 @@
-This is a tampered version of the sample file.

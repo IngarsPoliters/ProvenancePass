@@ -15,29 +15,47 @@ async function main() {
   
   if (args.length < 1) {
     console.error(`
-Usage: ${process.argv[1]} <private-key-hex> [options]
+Usage: ${process.argv[1]} <command> [options]
 
-Signs the revocations.json file with the provided private key.
-
-Arguments:
-  private-key-hex    Ed25519 private key in hex format (64 chars)
+Commands:
+  gen                Generate new revocation authority key pair
+  sign --priv <hex>  Sign revocations.json with private key
+  verify --pub <hex> Verify revocations.json signature
 
 Options:
-  --key-file <path>  Read private key from file instead of command line
-  --output <path>    Output signature file (default: docs/spec/revocations.sig)
-  --verify          Verify signature after signing
+  --priv <hex>      Private key in hex format (64 chars)
+  --pub <hex>       Public key in hex format (64 chars)
+  --key-file <path> Read key from file instead of command line
+  --output <path>   Output signature file (default: docs/spec/revocations.sig)
   --help            Show this help message
 
 Examples:
-  # Sign with key from command line
-  node scripts/sign-revocations.mjs a1b2c3d4e5f6...
+  # Generate keypair
+  node scripts/sign-revocations.mjs gen
 
-  # Sign with key from file
-  node scripts/sign-revocations.mjs --key-file revocation-authority.pem
+  # Sign with private key
+  node scripts/sign-revocations.mjs sign --priv a1b2c3d4e5f6...
 
-  # Sign and verify
-  node scripts/sign-revocations.mjs --key-file key.pem --verify
+  # Verify with public key
+  node scripts/sign-revocations.mjs verify --pub 1a2b3c4d...
 `);
+    process.exit(1);
+  }
+
+  const command = args[0];
+  
+  if (command === 'gen') {
+    await generateRevocationKey();
+    return;
+  }
+  
+  if (command === 'verify') {
+    await verifyRevocations(args.slice(1));
+    return;
+  }
+  
+  if (command !== 'sign') {
+    console.error(`Unknown command: ${command}`);
     process.exit(1);
   }
 
@@ -46,9 +64,12 @@ Examples:
   let verifyAfterSigning = false;
   let keyFile = '';
 
-  // Parse arguments
-  for (let i = 0; i < args.length; i++) {
+  // Parse arguments (skip 'sign' command)
+  for (let i = 1; i < args.length; i++) {
     switch (args[i]) {
+      case '--priv':
+        privateKeyHex = args[++i];
+        break;
       case '--key-file':
         keyFile = args[++i];
         break;
@@ -61,11 +82,6 @@ Examples:
       case '--help':
         console.log('Help already shown above');
         process.exit(0);
-        break;
-      default:
-        if (!privateKeyHex && !keyFile) {
-          privateKeyHex = args[i];
-        }
         break;
     }
   }
@@ -183,6 +199,76 @@ async function generateRevocationKey() {
   
   console.log(`💾 Saved to: ${keyId}.priv, ${keyId}.pub`);
   return { privateKeyHex, publicKeyHex };
+}
+
+// Helper function to verify revocations signature
+async function verifyRevocations(args) {
+  let publicKeyHex = '';
+  let keyFile = '';
+  
+  // Parse arguments
+  for (let i = 0; i < args.length; i++) {
+    switch (args[i]) {
+      case '--pub':
+        publicKeyHex = args[++i];
+        break;
+      case '--key-file':
+        keyFile = args[++i];
+        break;
+    }
+  }
+  
+  try {
+    // Read public key
+    if (keyFile) {
+      console.log(`📖 Reading public key from: ${keyFile}`);
+      publicKeyHex = readFileSync(keyFile, 'utf-8').trim();
+    }
+    
+    if (!publicKeyHex) {
+      throw new Error('Public key is required (--pub or --key-file)');
+    }
+    
+    if (publicKeyHex.length !== 64) {
+      throw new Error(`Public key must be 64 hex characters, got ${publicKeyHex.length}`);
+    }
+    
+    // Read revocations.json
+    console.log(`📖 Reading revocations file: ${REVOCATIONS_FILE}`);
+    const revocationsContent = readFileSync(REVOCATIONS_FILE, 'utf-8');
+    const revocations = JSON.parse(revocationsContent);
+    
+    if (!revocations.signature) {
+      throw new Error('No signature found in revocations.json');
+    }
+    
+    // Extract data without signature
+    const { signature, ...dataToVerify } = revocations;
+    
+    // Canonicalize and verify
+    console.log('🔐 Canonicalizing JSON for verification...');
+    const canonicalData = canonicalizeJSON(dataToVerify);
+    const messageBytes = Buffer.from(canonicalData, 'utf-8');
+    const publicKeyBytes = Buffer.from(publicKeyHex, 'hex');
+    const signatureBytes = Buffer.from(signature, 'hex');
+    
+    console.log('🔍 Verifying signature...');
+    const isValid = await ed25519.verify(signatureBytes, messageBytes, publicKeyBytes);
+    
+    if (isValid) {
+      console.log('✅ Signature verification: PASSED');
+      console.log(`📊 Revocation entries: ${dataToVerify.revoked_keys?.length || 0}`);
+      console.log(`🔑 Authority: ${dataToVerify.authority}`);
+      console.log(`📅 Last updated: ${dataToVerify.last_updated}`);
+    } else {
+      console.log('❌ Signature verification: FAILED');
+      process.exit(1);
+    }
+    
+  } catch (error) {
+    console.error(`❌ Verification error: ${error.message}`);
+    process.exit(1);
+  }
 }
 
 // Export for testing

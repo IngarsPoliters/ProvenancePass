@@ -1,0 +1,41 @@
+{
+  "version": "0.1",
+  "artifact": {
+    "sha256": "205439601fec40d7b4d7cae756f29962a543f57def5815823f5bfc361bd260bd",
+    "mime": "text/plain",
+    "name": "document.txt",
+    "size": 23,
+    "created_at": "2025-08-19T11:51:29.460Z",
+    "hash_binding": "bytes",
+    "byte_size": 23
+  },
+  "inputs": [
+    {
+      "type": "source",
+      "sha256": "205439601fec40d7b4d7cae756f29962a543f57def5815823f5bfc361bd260bd",
+      "name": "document.txt",
+      "size": 23,
+      "role": "input"
+    }
+  ],
+  "steps": [
+    {
+      "action": "No-op signing",
+      "tool": "cp",
+      "command": "cp /home/coder/project/provenancepass/examples/assets/document.txt /home/coder/project/provenancepass/examples/out/pass/document.txt",
+      "started_at": "2025-08-19T11:51:29.456Z",
+      "ended_at": "2025-08-19T11:51:29.460Z",
+      "actor": {
+        "type": "software",
+        "id": "pp-cli"
+      }
+    }
+  ],
+  "policy_checks": [],
+  "signature": {
+    "algo": "ed25519",
+    "public_key": "c9c68bfcf3d17f6447883ad2869b8de5674216a2f72811616c9cecb40a5560a7",
+    "signature": "84369ef25eac135b43a5c2b97cb4b3a4367b29822d99765b6815dca7288d364fd81041860848192ce5ce7a3b86b9159460ca860a453a434687623d07263d0d0d",
+    "key_id": "ppk_b0726f57510b1d0a"
+  }
+}

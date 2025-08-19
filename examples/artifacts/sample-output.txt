@@ -1,6 +1,0 @@
-Hello, Provenance World!
-
-This is a sample text file used to demonstrate 
-Provenance Passport functionality.
-
-Created for testing C2PA embedding and verification.
