@@ -1,8 +1,20 @@
-# Marketing: static Nginx + healthz + gzip
-FROM nginx:1.27-alpine
+# Static marketing site with Nginx
+FROM nginx:alpine
+
+# Install curl for health checks
 RUN apk add --no-cache curl
-COPY packages/site/nginx.conf /etc/nginx/conf.d/default.conf
-COPY packages/site/public/ /usr/share/nginx/html/
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy static files
+COPY static/ /usr/share/nginx/html/
+
+# Expose port 80
 EXPOSE 80
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -fsS http://localhost/healthz || exit 1
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/healthz || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

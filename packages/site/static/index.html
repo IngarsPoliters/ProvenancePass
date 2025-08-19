@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ProvenancePass - Cryptographic Provenance for Digital Assets</title>
+  <meta name="description" content="Secure your digital supply chain with cryptographically signed provenance. Track, verify, and trust your digital artifacts.">
+  
+  <!-- OpenGraph tags -->
+  <meta property="og:title" content="ProvenancePass - Cryptographic Provenance for Digital Assets">
+  <meta property="og:description" content="Secure your digital supply chain with cryptographically signed provenance. Track, verify, and trust your digital artifacts.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://provenancepass.com">
+  <meta property="og:image" content="https://provenancepass.com/og-image.png">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ProvenancePass - Cryptographic Provenance">
+  <meta name="twitter:description" content="Secure your digital supply chain with cryptographically signed provenance.">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Header */
+    header { padding: 20px 0; border-bottom: 1px solid #e5e7eb; }
+    .logo { font-size: 24px; font-weight: 700; color: #2563eb; }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 0;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      margin: 0 0 24px 0;
+      color: #0f172a;
+      line-height: 1.1;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #475569;
+      margin: 0 0 40px 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Buttons */
+    .cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .btn.primary {
+      background: #2563eb;
+      color: white;
+    }
+    .btn.primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    .btn.secondary {
+      background: white;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+    }
+    .btn.secondary:hover {
+      background: #2563eb;
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    /* Features */
+    .features { padding: 80px 0; }
+    .features h2 {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 0 48px 0;
+      color: #0f172a;
+    }
+    .features-list { max-width: 600px; margin: 0 auto; }
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+    .feature-icon {
+      font-size: 24px;
+      margin-right: 16px;
+      margin-top: 4px;
+    }
+    .feature h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #0f172a;
+    }
+    .feature p {
+      margin: 0;
+      color: #475569;
+    }
+    
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      background: #1e293b;
+      color: #94a3b8;
+      text-align: center;
+    }
+    footer a {
+      color: #cbd5e1;
+      text-decoration: none;
+    }
+    footer a:hover { color: white; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 36px; }
+      .cta { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">ProvenancePass</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Secure Your Digital Supply Chain</h1>
+      <p>Create cryptographically signed provenance records for your builds, documents, and media. Track every step from creation to deployment with tamper-proof verification.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://viewer.provenancepass.com">Try Web Viewer</a>
+        <a class="btn secondary" href="https://github.com/IngarsPoliters/ProvenancePass">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>Why ProvenancePass?</h2>
+      <div class="features-list">
+        <div class="feature">
+          <div class="feature-icon">🔐</div>
+          <div>
+            <h3>Cryptographically Secure</h3>
+            <p>Ed25519 digital signatures ensure tamper-proof verification. Each file is cryptographically bound to its provenance record.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <div>
+            <h3>CI/CD Ready</h3>
+            <p>GitHub Actions integration, CLI tools, and web verification. Automate provenance creation in your build pipeline.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🌐</div>
+          <div>
+            <h3>Industry Standards</h3>
+            <p>C2PA embedding for media files, DOCX integration for documents, and universal sidecar support.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> ProvenancePass • 
+        <a href="https://github.com/IngarsPoliters/ProvenancePass">GitHub</a> • 
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/product/privacy.md">Privacy</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+</body>
+</html>
