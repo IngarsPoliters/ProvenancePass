@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="canonical" href="https://www.provenancepass.com/pricing.html">
+  <title>Pricing - ProvenancePass</title>
+  <meta name="description" content="Flexible pricing for cryptographic provenance. Free tier for individuals, paid plans for teams and enterprises.">
+  <meta property="og:title" content="Pricing - ProvenancePass">
+  <meta property="og:description" content="Flexible pricing for cryptographic provenance. Free tier for individuals, paid plans for teams and enterprises.">
+  <meta property="og:image" content="https://www.provenancepass.com/assets/og.png">
+  <meta property="og:url" content="https://www.provenancepass.com/pricing.html">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Header */
+    header { padding: 20px 0; border-bottom: 1px solid #e5e7eb; }
+    nav { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 24px; font-weight: 700; color: #2563eb; text-decoration: none; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { text-decoration: none; color: #475569; font-weight: 500; }
+    .nav-links a:hover { color: #2563eb; }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 60px 0;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      margin: 0 0 16px 0;
+      color: #0f172a;
+    }
+    .hero p {
+      font-size: 18px;
+      color: #475569;
+      margin: 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Pricing */
+    .pricing { padding: 80px 0; }
+    .pricing h2 {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 0 48px 0;
+      color: #0f172a;
+    }
+    .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; }
+    
+    .tier {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 32px;
+      position: relative;
+      background: #fff;
+    }
+    .tier.featured {
+      border-color: #2563eb;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+    }
+    .tier.featured::before {
+      content: "Most Popular";
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2563eb;
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .tier-icon { font-size: 32px; margin-bottom: 16px; }
+    .tier h3 { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: #0f172a; }
+    .tier-price { font-size: 32px; font-weight: 800; color: #2563eb; margin-bottom: 8px; }
+    .tier-price .period { font-size: 16px; font-weight: 400; color: #475569; }
+    .tier-desc { color: #475569; margin-bottom: 24px; font-size: 14px; }
+    
+    .tier-features { list-style: none; padding: 0; margin: 0 0 32px 0; }
+    .tier-features li {
+      padding: 8px 0;
+      color: #374151;
+      position: relative;
+      padding-left: 24px;
+    }
+    .tier-features li::before {
+      content: "✅";
+      position: absolute;
+      left: 0;
+      top: 8px;
+    }
+    
+    .tier-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 24px;
+      border: 2px solid #2563eb;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.2s;
+      background: white;
+      color: #2563eb;
+    }
+    .tier-btn:hover, .tier.featured .tier-btn {
+      background: #2563eb;
+      color: white;
+    }
+    
+    /* Contact */
+    .contact { padding: 60px 0; background: #f8fafc; text-align: center; }
+    .contact h2 { font-size: 28px; font-weight: 700; margin: 0 0 16px 0; color: #0f172a; }
+    .contact p { color: #475569; margin: 0 0 32px 0; }
+    .contact-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+    .contact-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .contact-link:hover { background: #1d4ed8; transform: translateY(-1px); }
+    
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      background: #1e293b;
+      color: #94a3b8;
+      text-align: center;
+    }
+    footer a {
+      color: #cbd5e1;
+      text-decoration: none;
+    }
+    footer a:hover { color: white; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero h1 { font-size: 32px; }
+      .tiers { grid-template-columns: 1fr; }
+      .contact-links { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <a class="logo" href="/">ProvenancePass</a>
+        <div class="nav-links">
+          <a href="/">Home</a>
+          <a href="/pricing.html">Pricing</a>
+          <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md">Docs</a>
+          <a href="https://viewer.provenancepass.com" target="_blank" rel="noopener">Viewer</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Simple, Transparent Pricing</h1>
+      <p>Flexible pricing for individuals, teams, and enterprises seeking cryptographic provenance for their digital assets.</p>
+    </div>
+  </section>
+
+  <section class="pricing">
+    <div class="container">
+      <div class="tiers">
+        <div class="tier">
+          <div class="tier-icon">🆓</div>
+          <h3>Free</h3>
+          <div class="tier-price">$0<span class="period">/forever</span></div>
+          <div class="tier-desc">Perfect for getting started, personal projects, and open source.</div>
+          <ul class="tier-features">
+            <li>CLI Tool & Web Viewer</li>
+            <li>GitHub Action</li>
+            <li>C2PA Embedding</li>
+            <li>Up to 100MB per file</li>
+            <li>1,000 API requests/month</li>
+            <li>Community support</li>
+          </ul>
+          <a class="tier-btn" href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" target="_blank" rel="noopener">Get Started Free</a>
+        </div>
+
+        <div class="tier featured">
+          <div class="tier-icon">🚀</div>
+          <h3>Starter</h3>
+          <div class="tier-price">$19<span class="period">/month</span></div>
+          <div class="tier-desc">Perfect for small teams and professional projects.</div>
+          <ul class="tier-features">
+            <li>Everything in Free</li>
+            <li>Priority email support</li>
+            <li>Custom revocation lists</li>
+            <li>Up to 1GB per file</li>
+            <li>10,000 API requests/month</li>
+            <li>Up to 5 team members</li>
+            <li>99.5% uptime SLA</li>
+          </ul>
+          <a class="tier-btn" href="mailto:sales@provenancepass.com?subject=Starter%20Plan%20Inquiry">Start Free Trial</a>
+        </div>
+
+        <div class="tier">
+          <div class="tier-icon">📈</div>
+          <h3>Growth</h3>
+          <div class="tier-price">$99<span class="period">/month</span></div>
+          <div class="tier-desc">Ideal for scaling teams and production workloads.</div>
+          <ul class="tier-features">
+            <li>Everything in Starter</li>
+            <li>Premium support & chat</li>
+            <li>Advanced analytics</li>
+            <li>SSO integration</li>
+            <li>Up to 10GB per file</li>
+            <li>100,000 API requests/month</li>
+            <li>Up to 25 team members</li>
+            <li>99.9% uptime SLA</li>
+          </ul>
+          <a class="tier-btn" href="mailto:sales@provenancepass.com?subject=Growth%20Plan%20Inquiry">Contact Sales</a>
+        </div>
+
+        <div class="tier">
+          <div class="tier-icon">🏢</div>
+          <h3>Enterprise</h3>
+          <div class="tier-price">Custom<span class="period"></span></div>
+          <div class="tier-desc">For large organizations with complex requirements.</div>
+          <ul class="tier-features">
+            <li>Everything in Growth</li>
+            <li>Dedicated support manager</li>
+            <li>On-premises deployment</li>
+            <li>Custom SLAs & development</li>
+            <li>Unlimited file size</li>
+            <li>Unlimited API requests</li>
+            <li>Unlimited team members</li>
+            <li>99.99% uptime SLA</li>
+          </ul>
+          <a class="tier-btn" href="mailto:enterprise@provenancepass.com?subject=Enterprise%20Consultation">Schedule Demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact">
+    <div class="container">
+      <h2>Questions? We're Here to Help</h2>
+      <p>Our team is ready to help you choose the right plan and get started with cryptographic provenance.</p>
+      <div class="contact-links">
+        <a href="mailto:sales@provenancepass.com" class="contact-link">📧 Email Sales</a>
+        <a href="https://calendly.com/provenancepass-enterprise" target="_blank" rel="noopener" class="contact-link">📅 Schedule Call</a>
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" target="_blank" rel="noopener" class="contact-link">📚 View Docs</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> ProvenancePass • 
+        <a href="/">Home</a> • 
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md">Documentation</a> • 
+        <a href="https://github.com/IngarsPoliters/ProvenancePass">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>document.getElementById('year').textContent=new Date().getFullYear()</script>
+  <script src="/scripts/embed-analytics.js"></script>
+</body>
+</html>
