@@ -1,5 +1,10 @@
 import * as ed25519 from '@noble/ed25519';
 import { sha256String } from './hash.js';
+import { jcsCanonicalize } from './jcs.js';
+import { createHash } from 'crypto';
+
+// Setup ed25519 with Node.js crypto
+ed25519.etc.sha512Sync = (...m) => createHash('sha512').update(Buffer.concat(m)).digest();
 
 export interface KeyPair {
   privateKey: Uint8Array;
@@ -19,26 +24,8 @@ export function generateKeyPair(): KeyPair {
   return { privateKey, publicKey };
 }
 
-export function canonicalizeJSON(obj: any): string {
-  if (obj === null) return 'null';
-  if (typeof obj === 'boolean') return obj.toString();
-  if (typeof obj === 'number') return obj.toString();
-  if (typeof obj === 'string') return JSON.stringify(obj);
-  
-  if (Array.isArray(obj)) {
-    const items = obj.map(item => canonicalizeJSON(item));
-    return `[${items.join(',')}]`;
-  }
-  
-  if (typeof obj === 'object') {
-    const sortedKeys = Object.keys(obj).sort();
-    const pairs = sortedKeys.map(key => {
-      return `${JSON.stringify(key)}:${canonicalizeJSON(obj[key])}`;
-    });
-    return `{${pairs.join(',')}}`;
-  }
-  
-  throw new Error(`Cannot canonicalize type: ${typeof obj}`);
+export function canonicalizeJSON(input: unknown): string {
+  return jcsCanonicalize(input);
 }
 
 export function generateKeyId(publicKey: Uint8Array): string {
