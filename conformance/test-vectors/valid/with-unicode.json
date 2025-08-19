@@ -1,0 +1,20 @@
+{
+  "version": "0.1",
+  "artifact": {
+    "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "mime": "text/plain",
+    "name": "тест.txt",
+    "created_at": "2024-08-19T15:30:00Z"
+  },
+  "review": {
+    "reviewer": "张三",
+    "approved": true,
+    "comments": "すべて良好です - All checks passed",
+    "timestamp": "2024-08-19T15:31:00Z"
+  },
+  "signature": {
+    "algo": "ed25519",
+    "public_key": "278117fc144c72340f67d0f2316e8386ceffbf2b2428c9c51fef7c597f1d426e",
+    "signature": "ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab"
+  }
+}

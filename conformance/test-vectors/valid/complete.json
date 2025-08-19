@@ -1,0 +1,43 @@
+{
+  "version": "0.1",
+  "artifact": {
+    "sha256": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae",
+    "mime": "text/plain",
+    "name": "hello.txt",
+    "size": 5,
+    "created_at": "2024-08-19T15:30:00Z"
+  },
+  "inputs": [
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "name": "input.txt",
+      "mime": "text/plain"
+    }
+  ],
+  "steps": [
+    {
+      "command": "echo hello > hello.txt",
+      "exit_code": 0,
+      "duration_ms": 10,
+      "timestamp": "2024-08-19T15:30:00Z"
+    }
+  ],
+  "review": {
+    "reviewer": "test-reviewer",
+    "approved": true,
+    "comments": "Automated test review",
+    "timestamp": "2024-08-19T15:31:00Z"
+  },
+  "policy_checks": [
+    {
+      "policy": "file-size-limit",
+      "passed": true,
+      "details": "File size within limits"
+    }
+  ],
+  "signature": {
+    "algo": "ed25519",
+    "public_key": "fc51cd8e6218a1c7c7301762dd0044aad63fc616e8bd4d4d5e06d95db0f4f3e4",
+    "signature": "8ce22a22d8bb0bdba6c82fcce7c8e4b3c5b8f57dac8bfc73c20f7b8dbf7fb01e5dcf8b7b3a7d8e8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f"
+  }
+}
