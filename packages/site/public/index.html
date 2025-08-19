@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ProvenancePass</title>
+  <meta name="description" content="Cryptographic provenance for digital artifacts.">
+  <style>
+    body{margin:0;font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+    .wrap{max-width:980px;margin:0 auto;padding:48px 24px}
+    .hero{display:flex;flex-direction:column;gap:16px;margin:40px 0}
+    h1{font-size:44px;margin:0}
+    .cta{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{padding:10px 16px;border-radius:10px;text-decoration:none;border:1px solid #2563eb}
+    .btn.primary{background:#2563eb;color:white}
+    footer{margin-top:40px;color:#6b7280}
+    code{background:#f3f4f6;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <strong>ProvenancePass</strong>
+    </header>
+    <section class="hero">
+      <h1>Trust the files you ship and receive</h1>
+      <p>ProvenancePass creates verifiable, cryptographic receipts for your build & content pipelines, with optional C2PA embedding.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://viewer.provenancepass.com">Open Viewer</a>
+        <a class="btn" href="https://github.com/IngarsPoliters/ProvenancePass">GitHub</a>
+        <a class="btn" href="/docs.html">Docs</a>
+      </div>
+    </section>
+
+    <section>
+      <h3>How it works</h3>
+      <ol>
+        <li><code>pp keygen</code> — create a signing key</li>
+        <li><code>pp wrap --run "your command"</code> — produce a signed receipt</li>
+        <li><code>pp embed</code> — (optional) place it into C2PA</li>
+        <li><code>pp verify</code> — verify via sidecar or embedded</li>
+      </ol>
+    </section>
+
+    <footer>© <span id="y"></span> ProvenancePass</footer>
+  </div>
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+</body>
+</html>
