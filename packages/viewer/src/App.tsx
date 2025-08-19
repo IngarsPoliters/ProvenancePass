@@ -1,38 +1,68 @@
-import React, { useState, useCallback } from 'react'
+import React, { useReducer, useCallback } from 'react'
 import { DropZone } from './components/DropZone'
-import { VerificationResult } from './components/VerificationResult'
-import { verifyFiles } from './lib/verifier'
+import { ResultBanner } from './components/ResultBanner'
+import { verifyFilesLazy, preloadVerifier } from './lib/lazy-verifier'
 import type { VerificationData } from './types'
 
+type ViewerAction = 
+  | { type: 'FILE_DROPPED'; payload: File[] }
+  | { type: 'URL_ENTERED'; payload: string }
+  | { type: 'SAMPLE_CLICKED' }
+  | { type: 'VERIFY_START' }
+  | { type: 'VERIFY_SUCCESS'; payload: VerificationData }
+  | { type: 'VERIFY_ERROR'; payload: string }
+  | { type: 'RESET' };
+
+interface ViewerState {
+  verification: VerificationData | null;
+  loading: boolean;
+  error: string | null;
+  status: 'idle' | 'loading' | 'success' | 'error';
+}
+
+function viewerReducer(state: ViewerState, action: ViewerAction): ViewerState {
+  switch (action.type) {
+    case 'FILE_DROPPED':
+    case 'URL_ENTERED':
+    case 'SAMPLE_CLICKED':
+    case 'VERIFY_START':
+      return { ...state, loading: true, error: null, verification: null, status: 'loading' };
+    case 'VERIFY_SUCCESS':
+      return { ...state, loading: false, verification: action.payload, status: 'success' };
+    case 'VERIFY_ERROR':
+      return { ...state, loading: false, error: action.payload, status: 'error' };
+    case 'RESET':
+      return { verification: null, loading: false, error: null, status: 'idle' };
+    default:
+      return state;
+  }
+}
+
 function App() {
-  const [verification, setVerification] = useState<VerificationData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [state, dispatch] = useReducer(viewerReducer, {
+    verification: null,
+    loading: false,
+    error: null,
+    status: 'idle'
+  });
 
   const handleFilesDropped = useCallback(async (files: File[]) => {
-    setLoading(true)
-    setError(null)
-    setVerification(null)
+    dispatch({ type: 'FILE_DROPPED', payload: files })
 
     try {
-      const result = await verifyFiles(files)
-      setVerification(result)
+      const result = await verifyFilesLazy(files)
+      dispatch({ type: 'VERIFY_SUCCESS', payload: result })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Verification failed')
-    } finally {
-      setLoading(false)
+      dispatch({ type: 'VERIFY_ERROR', payload: err instanceof Error ? err.message : 'Verification failed' })
     }
   }, [])
 
   const handleReset = useCallback(() => {
-    setVerification(null)
-    setError(null)
+    dispatch({ type: 'RESET' })
   }, [])
 
   const handleAutoloadSample = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    setVerification(null)
+    dispatch({ type: 'SAMPLE_CLICKED' })
 
     try {
       // Fetch the sample file and its passport
@@ -56,12 +86,10 @@ function App() {
         new File([passportBlob], 'document.txt.passport.json', { type: 'application/json' })
       ]
 
-      const result = await verifyFiles(files)
-      setVerification(result)
+      const result = await verifyFilesLazy(files)
+      dispatch({ type: 'VERIFY_SUCCESS', payload: result })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load sample')
-    } finally {
-      setLoading(false)
+      dispatch({ type: 'VERIFY_ERROR', payload: err instanceof Error ? err.message : 'Failed to load sample' })
     }
   }, [])
 
@@ -102,7 +130,9 @@ function App() {
           <button 
             onClick={handleAutoloadSample} 
             className="cta-button primary"
-            disabled={loading}
+            disabled={state.loading}
+            onMouseEnter={() => preloadVerifier()}
+            onFocus={() => preloadVerifier()}
           >
             ⚡ Try Sample Now
           </button>
@@ -129,38 +159,16 @@ function App() {
       </div>
 
       <main>
-        {!verification && !loading && (
+        {!state.verification && !state.loading && (
           <DropZone onFilesDropped={handleFilesDropped} />
         )}
 
-        {loading && (
-          <div className="loading">
-            <div className="dropzone">
-              <div className="dropzone-icon">⏳</div>
-              <h3>Verifying files...</h3>
-              <p>Checking for C2PA manifests and sidecar passports</p>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="error">
-            <strong>Verification Error:</strong> {error}
-            <button 
-              onClick={handleReset} 
-              style={{ marginLeft: '1rem', padding: '0.5rem 1rem' }}
-            >
-              Try Again
-            </button>
-          </div>
-        )}
-
-        {verification && (
-          <VerificationResult 
-            data={verification} 
-            onReset={handleReset}
-          />
-        )}
+        <ResultBanner
+          status={state.status}
+          verification={state.verification}
+          error={state.error}
+          onReset={handleReset}
+        />
       </main>
 
       <footer className="footer">
