@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
-import { writeFileSync, readFileSync, mkdtempSync, unlinkSync } from 'fs';
+import { writeFileSync, readFileSync, mkdtempSync, unlinkSync, existsSync, mkdirSync, renameSync } from 'fs';
 import { tmpdir } from 'os';
-import { join } from 'path';
+import { join, dirname, resolve } from 'path';
 
 export interface C2paManifest {
   claim_generator: string;
@@ -170,6 +170,209 @@ async function runC2paTool(args: string[]): Promise<{ stdout: string; stderr: st
 /**
  * Get installation instructions for c2patool
  */
+/**
+ * Check if c2patool supports DOCX embedding
+ */
+export async function supportsDocx(): Promise<boolean> {
+  const hasC2pa = await hasC2paTool();
+  if (!hasC2pa) {
+    return false;
+  }
+
+  try {
+    const result = await runC2paTool(['--help']);
+    // Check if DOCX is mentioned in the help output
+    return result.stdout.toLowerCase().includes('docx') || 
+           result.stdout.toLowerCase().includes('.docx');
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Fallback embedding for DOCX using OOXML custom parts
+ */
+export async function embedDocxFallback(docxPath: string, receiptJson: any): Promise<void> {
+  const tempDir = mkdtempSync(join(tmpdir(), 'pp-docx-'));
+  
+  try {
+    // Extract DOCX to temporary directory
+    await extractZip(docxPath, tempDir);
+    
+    // Create customXml directory if it doesn't exist
+    const customXmlDir = join(tempDir, 'customXml');
+    if (!existsSync(customXmlDir)) {
+      mkdirSync(customXmlDir, { recursive: true });
+    }
+    
+    // Write passport.json to customXml directory
+    const passportPath = join(customXmlDir, 'passport.json');
+    writeFileSync(passportPath, JSON.stringify(receiptJson, null, 2));
+    
+    // Add relationship to document.xml.rels
+    await addCustomXmlRelationship(tempDir);
+    
+    // Re-zip the DOCX file
+    await createZip(tempDir, docxPath);
+    
+  } finally {
+    // Clean up temporary directory
+    await rmrf(tempDir);
+  }
+}
+
+/**
+ * Extract passport from DOCX custom XML parts
+ */
+export async function inspectDocxCustom(docxPath: string): Promise<any | null> {
+  const tempDir = mkdtempSync(join(tmpdir(), 'pp-docx-inspect-'));
+  
+  try {
+    // Extract DOCX to temporary directory
+    await extractZip(docxPath, tempDir);
+    
+    // Check for passport.json in customXml
+    const passportPath = join(tempDir, 'customXml', 'passport.json');
+    if (!existsSync(passportPath)) {
+      return null;
+    }
+    
+    const passportContent = readFileSync(passportPath, 'utf-8');
+    return JSON.parse(passportContent);
+    
+  } catch (error) {
+    return null;
+  } finally {
+    // Clean up temporary directory
+    await rmrf(tempDir);
+  }
+}
+
+/**
+ * Extract ZIP file using unzip command
+ */
+async function extractZip(zipPath: string, destDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('unzip', ['-q', zipPath, '-d', destDir]);
+    
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Failed to extract ZIP file: exit code ${code}`));
+      }
+    });
+    
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+/**
+ * Create ZIP file using zip command
+ */
+async function createZip(sourceDir: string, zipPath: string): Promise<void> {
+  return new Promise((resolvePromise, reject) => {
+    // Create a temporary file in the same directory as the target
+    const resolvedZipPath = resolve(zipPath);
+    const tempZipPath = join(dirname(resolvedZipPath), `temp-${Date.now()}.zip`);
+    const child = spawn('zip', ['-r', '-q', tempZipPath, '.'], { 
+      cwd: sourceDir 
+    });
+    
+    child.on('close', (code) => {
+      if (code === 0) {
+        // Move the temporary file to the final location
+        try {
+          renameSync(tempZipPath, resolvedZipPath);
+          resolvePromise();
+        } catch (error) {
+          reject(error);
+        }
+      } else {
+        // Clean up temporary file on error
+        try {
+          unlinkSync(tempZipPath);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+        reject(new Error(`Failed to create ZIP file: exit code ${code}`));
+      }
+    });
+    
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+/**
+ * Add relationship for custom XML part
+ */
+async function addCustomXmlRelationship(tempDir: string): Promise<void> {
+  const relsPath = join(tempDir, 'word', '_rels', 'document.xml.rels');
+  
+  // Create _rels directory if it doesn't exist
+  const relsDir = dirname(relsPath);
+  if (!existsSync(relsDir)) {
+    mkdirSync(relsDir, { recursive: true });
+  }
+  
+  let relsContent: string;
+  
+  if (existsSync(relsPath)) {
+    relsContent = readFileSync(relsPath, 'utf-8');
+  } else {
+    // Create basic relationships file
+    relsContent = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+                  '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
+                  '</Relationships>';
+  }
+  
+  // Check if our relationship already exists
+  if (relsContent.includes('provenancepassport')) {
+    return; // Already added
+  }
+  
+  // Generate a unique relationship ID
+  const relationshipId = `rId${Date.now()}`;
+  
+  // Add our custom relationship
+  const customRel = `  <Relationship Id="${relationshipId}" ` +
+                   `Type="http://schemas.provenancepassport.org/customXml" ` +
+                   `Target="../customXml/passport.json"/>`;
+  
+  // Insert before closing </Relationships> tag
+  relsContent = relsContent.replace(
+    '</Relationships>',
+    `${customRel}\n</Relationships>`
+  );
+  
+  writeFileSync(relsPath, relsContent);
+}
+
+/**
+ * Remove directory recursively
+ */
+async function rmrf(dirPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('rm', ['-rf', dirPath]);
+    
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Failed to remove directory: exit code ${code}`));
+      }
+    });
+    
+    child.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
 export function getC2paInstallInstructions(): string {
   return `c2patool not found. Please install it:
 

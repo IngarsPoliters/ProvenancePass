@@ -6,7 +6,7 @@ import fg from 'fast-glob';
 import { sha256File } from '../lib/hash.js';
 import { verifyPassport } from '../lib/sign.js';
 import { validatePassport } from '../lib/schema.js';
-import { inspectC2pa } from '../lib/c2pa.js';
+import { inspectC2pa, inspectDocxCustom } from '../lib/c2pa.js';
 
 interface VerifyOptions {
   glob?: string;
@@ -22,7 +22,7 @@ interface VerificationResult {
   file: string;
   status: 'pass' | 'fail' | 'warning';
   passport_found: boolean;
-  passport_source?: 'c2pa' | 'sidecar';
+  passport_source?: 'c2pa' | 'docx-custom' | 'sidecar';
   signature_valid?: boolean;
   key_id?: string;
   key_status?: 'active' | 'revoked' | 'unknown';
@@ -141,7 +141,7 @@ async function verifyFile(
 
   // First, try to extract passport from C2PA manifest
   let passport: any = null;
-  let passportSource: 'c2pa' | 'sidecar' = 'sidecar';
+  let passportSource: 'c2pa' | 'docx-custom' | 'sidecar' = 'sidecar';
   
   try {
     const c2paData = await inspectC2pa(file);
@@ -150,7 +150,20 @@ async function verifyFile(
       passportSource = 'c2pa';
     }
   } catch (error) {
-    // C2PA inspection failed, continue to sidecar fallback
+    // C2PA inspection failed, continue to other methods
+  }
+
+  // If no C2PA passport and this is a DOCX file, try custom XML parts
+  if (!passport && file.toLowerCase().endsWith('.docx')) {
+    try {
+      const docxPassport = await inspectDocxCustom(file);
+      if (docxPassport) {
+        passport = docxPassport;
+        passportSource = 'docx-custom';
+      }
+    } catch (error) {
+      // DOCX custom inspection failed, continue to sidecar fallback
+    }
   }
 
   // If no C2PA passport found, fall back to sidecar file
@@ -162,7 +175,7 @@ async function verifyFile(
         file: filePath,
         status: 'warning',
         passport_found: false,
-        error: 'No passport found (neither C2PA embedded nor sidecar file)'
+        error: 'No passport found (neither C2PA embedded, DOCX custom parts, nor sidecar file)'
       };
     }
 
@@ -317,7 +330,9 @@ function printResult(result: VerificationResult): void {
   if (result.status === 'pass') {
     console.log(`📄 Artifact: ${basename(result.file)} (sha256: ${result.artifact_hash?.slice(0, 12)}...)`);
     console.log(`🔐 Signature: Valid (${result.key_id})`);
-    console.log(`📋 Source: ${result.passport_source === 'c2pa' ? 'C2PA embedded manifest' : 'Sidecar file'}`);
+    const sourceText = result.passport_source === 'c2pa' ? 'C2PA embedded manifest' :
+                      result.passport_source === 'docx-custom' ? 'DOCX custom XML parts' : 'Sidecar file';
+    console.log(`📋 Source: ${sourceText}`);
     if (result.created_at) {
       console.log(`⏰ Created: ${result.created_at}`);
     }
@@ -333,7 +348,9 @@ function printResult(result: VerificationResult): void {
       console.log(`📄 Artifact: ${basename(result.file)} (sha256: ${result.artifact_hash.slice(0, 12)}...)`);
     }
     if (result.passport_source) {
-      console.log(`📋 Source: ${result.passport_source === 'c2pa' ? 'C2PA embedded manifest' : 'Sidecar file'}`);
+      const sourceText = result.passport_source === 'c2pa' ? 'C2PA embedded manifest' :
+                      result.passport_source === 'docx-custom' ? 'DOCX custom XML parts' : 'Sidecar file';
+    console.log(`📋 Source: ${sourceText}`);
     }
     if (result.signature_valid === false) {
       console.log(`🔐 Signature: INVALID - does not match content`);
