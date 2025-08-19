@@ -1,7 +1,7 @@
 {
   "name": "@provenancepass/cli",
   "version": "0.1.0",
-  "description": "CLI tool for creating and verifying cryptographic provenance receipts for digital artifacts",
+  "description": "Create and verify cryptographic provenance records for your builds, documents, and media files. Supports C2PA embedding, DOCX custom parts, and sidecar files.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,7 +42,13 @@
     "verification",
     "cryptography",
     "c2pa",
-    "digital-signatures"
+    "digital-signatures",
+    "supply-chain",
+    "build-verification",
+    "ed25519",
+    "docx",
+    "security",
+    "tamper-proof"
   ],
   "license": "Apache-2.0",
   "repository": {
