@@ -37,6 +37,24 @@ function App() {
           Drag and drop files to verify their cryptographic provenance.
           Supports C2PA-embedded files and sidecar passports.
         </p>
+        <div className="header-actions">
+          <a 
+            href="https://github.com/IngarsPoliters/ProvenancePass" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="cta-button secondary"
+          >
+            📖 GitHub
+          </a>
+          <a 
+            href="https://provenancepass.com/docs/cli" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="cta-button secondary"
+          >
+            🛠️ CLI Quickstart
+          </a>
+        </div>
       </header>
 
       <main>
@@ -73,6 +91,33 @@ function App() {
           />
         )}
       </main>
+
+      <footer className="footer">
+        <div className="footer-section">
+          <h3>🛠️ CLI Quickstart</h3>
+          <div className="code-block">
+            <code>
+              npm install -g @provenancepass/cli<br/>
+              pp verify document.pdf \<br/>
+              &nbsp;&nbsp;--revocations https://data.provenancepass.com/revocations.json
+            </code>
+          </div>
+        </div>
+        <div className="footer-section">
+          <h3>🌐 Resources</h3>
+          <div className="footer-links">
+            <a href="https://viewer.provenancepass.com/" target="_blank" rel="noopener noreferrer">
+              Web Viewer
+            </a>
+            <a href="https://github.com/IngarsPoliters/ProvenancePass" target="_blank" rel="noopener noreferrer">
+              GitHub Repository
+            </a>
+            <a href="https://provenancepass.com/docs/" target="_blank" rel="noopener noreferrer">
+              Documentation
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
