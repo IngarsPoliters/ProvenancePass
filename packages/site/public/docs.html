@@ -1,6 +1,107 @@
-<!doctype html><meta charset="utf-8">
-<title>ProvenancePass Docs</title>
-<ul>
-  <li><a href="https://github.com/IngarsPoliters/ProvenancePass/tree/main/docs/spec">Specification</a></li>
-  <li><a href="https://github.com/IngarsPoliters/ProvenancePass/tree/main/docs/product">Product docs</a></li>
-</ul>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ProvenancePass Documentation</title>
+  <style>
+    body{margin:0;font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;background:#f9fafb}
+    .wrap{max-width:800px;margin:0 auto;padding:48px 24px}
+    .card{background:white;border-radius:12px;padding:24px;margin:16px 0;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+    h1{color:#111827;margin:0 0 8px 0}
+    h2{color:#1f2937;margin:24px 0 16px 0;font-size:20px}
+    .subtitle{color:#6b7280;margin:0 0 32px 0}
+    .doc-grid{display:grid;gap:16px;margin:24px 0}
+    .doc-item{padding:20px;background:white;border:1px solid #e5e7eb;border-radius:8px;text-decoration:none;color:inherit;display:block;transition:all 0.2s}
+    .doc-item:hover{border-color:#2563eb;box-shadow:0 4px 12px rgba(37,99,235,0.15)}
+    .doc-title{font-weight:600;color:#111827;margin:0 0 8px 0}
+    .doc-desc{color:#6b7280;margin:0;font-size:14px}
+    .icon{display:inline-block;margin-right:8px;font-size:18px}
+    .back-link{color:#2563eb;text-decoration:none;font-size:14px}
+    .back-link:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="/" class="back-link">← Back to ProvenancePass</a>
+    </header>
+    
+    <div class="card">
+      <h1>📚 ProvenancePass Documentation</h1>
+      <p class="subtitle">Learn how to create and verify cryptographic provenance for your digital artifacts.</p>
+    </div>
+
+    <div class="doc-grid">
+      <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" class="doc-item">
+        <h3 class="doc-title"><span class="icon">🚀</span>Get Started</h3>
+        <p class="doc-desc">5-minute quickstart: install CLI, generate keys, wrap files, embed C2PA, and verify provenance.</p>
+      </a>
+
+      <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/ci.md" class="doc-item">
+        <h3 class="doc-title"><span class="icon">⚙️</span>CI/CD Integration</h3>
+        <p class="doc-desc">GitHub Actions examples, Jenkins pipelines, GitLab CI, and common pitfalls to avoid.</p>
+      </a>
+
+      <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/viewer.md" class="doc-item">
+        <h3 class="doc-title"><span class="icon">🌐</span>Web Viewer Guide</h3>
+        <p class="doc-desc">How the viewer reads C2PA first, then sidecars. Host your own revocations and configure custom URLs.</p>
+      </a>
+    </div>
+
+    <div class="card">
+      <h2>🔧 Technical Reference</h2>
+      <div class="doc-grid">
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/tree/main/docs/spec" class="doc-item">
+          <h3 class="doc-title"><span class="icon">📋</span>Specification</h3>
+          <p class="doc-desc">Technical specs, threat model, embedding formats, and cryptographic details.</p>
+        </a>
+
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/trust-bundles.md" class="doc-item">
+          <h3 class="doc-title"><span class="icon">🔑</span>Trust Bundles</h3>
+          <p class="doc-desc">Key distribution, revocation lists, and trust authority management.</p>
+        </a>
+
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md" class="doc-item">
+          <h3 class="doc-title"><span class="icon">🏷️</span>Embedding Methods</h3>
+          <p class="doc-desc">C2PA metadata, DOCX custom parts, sidecar files, and format-specific details.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🛠 Tools & Integration</h2>
+      <div class="doc-grid">
+        <a href="https://viewer.provenancepass.com" class="doc-item">
+          <h3 class="doc-title"><span class="icon">🌐</span>Web Viewer</h3>
+          <p class="doc-desc">Drag-and-drop verification in your browser. Works offline, no uploads required.</p>
+        </a>
+
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/tree/main/packages/actions" class="doc-item">
+          <h3 class="doc-title"><span class="icon">⚡</span>GitHub Action</h3>
+          <p class="doc-desc">Automated wrap and verify in your CI/CD workflows. Supports all major platforms.</p>
+        </a>
+
+        <a href="https://www.npmjs.com/package/@provenancepass/cli" class="doc-item">
+          <h3 class="doc-title"><span class="icon">💻</span>CLI Tool</h3>
+          <p class="doc-desc">Command-line interface for wrapping, embedding, and verifying files locally.</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏢 Product Information</h2>
+      <div class="doc-grid">
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/tree/main/docs/product" class="doc-item">
+          <h3 class="doc-title"><span class="icon">📊</span>Product Docs</h3>
+          <p class="doc-desc">Market research, UX considerations, and product development documentation.</p>
+        </a>
+      </div>
+    </div>
+
+    <footer style="text-align:center;margin:48px 0 24px;color:#6b7280;font-size:14px">
+      <p>Need help? <a href="https://github.com/IngarsPoliters/ProvenancePass/issues" style="color:#2563eb">Create an issue</a> or check the <a href="https://github.com/IngarsPoliters/ProvenancePass" style="color:#2563eb">GitHub repository</a>.</p>
+    </footer>
+  </div>
+</body>
+</html>
