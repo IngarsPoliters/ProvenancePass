@@ -12,7 +12,7 @@
       "description": "Example compromised key for testing revocation flows"
     },
     {
-      "key_id": "expired-legacy-key-002", 
+      "key_id": "expired-legacy-key-002",
       "revoked_at": "2025-08-19T09:15:00Z",
       "reason": "Key expiration",
       "severity": "medium",
@@ -20,12 +20,13 @@
     },
     {
       "key_id": "malicious-actor-key-003",
-      "revoked_at": "2025-08-19T08:45:00Z", 
+      "revoked_at": "2025-08-19T08:45:00Z",
       "reason": "Malicious usage detected",
       "severity": "critical",
       "description": "Key used for signing malicious artifacts"
     }
   ],
   "signature_key_id": "revocation-authority-2025",
-  "next_update": "2025-08-20T00:00:00Z"
+  "next_update": "2025-08-20T00:00:00Z",
+  "signature": "215584bd9093aa4d1637e39eced0559f82b138f794013a1be821d213ec03d343d719430f3fe3356ebe2f58e0fbf1c72a74b717ae4ee55971db182b3bbfcd5c05"
 }
