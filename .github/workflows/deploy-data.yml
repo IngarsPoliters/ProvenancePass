@@ -1,0 +1,26 @@
+name: Deploy Data Static
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/spec/revocations.json'
+      - 'docs/spec/manifest/**'
+      - 'packages/data/**'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync revocations & manifest into data/public
+        run: |
+          mkdir -p packages/data/public/manifest
+          cp docs/spec/revocations.json packages/data/public/revocations.json
+          [ -d docs/spec/manifest ] && rsync -av docs/spec/manifest/ packages/data/public/manifest/ || true
+      - name: Commit & push if changed
+        run: |
+          git config user.name "CI"
+          git config user.email "actions@users.noreply.github.com"
+          git add packages/data/public || true
+          git diff --cached --quiet || git commit -m "chore(data): sync revocations/manifest"
+          git push || true
