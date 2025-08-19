@@ -1,0 +1,41 @@
+{
+  "version": "0.1",
+  "artifact": {
+    "sha256": "18c37852ade978cf80f8ee6eee87e06f95fe1d732c792c0080849cc972e8bf64",
+    "mime": "text/plain",
+    "name": "document.txt",
+    "size": 53,
+    "created_at": "2025-08-19T16:20:42.738Z",
+    "hash_binding": "bytes",
+    "byte_size": 53
+  },
+  "inputs": [
+    {
+      "type": "source",
+      "sha256": "18c37852ade978cf80f8ee6eee87e06f95fe1d732c792c0080849cc972e8bf64",
+      "name": "document.txt",
+      "size": 53,
+      "role": "input"
+    }
+  ],
+  "steps": [
+    {
+      "action": "Test vector generation",
+      "tool": "true",
+      "command": "true",
+      "started_at": "2025-08-19T16:20:42.728Z",
+      "ended_at": "2025-08-19T16:20:42.738Z",
+      "actor": {
+        "type": "software",
+        "id": "pp-cli"
+      }
+    }
+  ],
+  "policy_checks": [],
+  "signature": {
+    "algo": "ed25519",
+    "public_key": "effcf227033fc29ffb5d1501ecc16f61b957ad8626e4cb4d6fa5f68d20628ec1",
+    "signature": "ab06eafe58c4c4b77b387373265a36874aa5e3e9420b5aea9c21652d13001c21074baefc3276554de983fa90f677e3a86268e9c08b265cfc5e1627faaf33570a",
+    "key_id": "ppk_a9855ab4b85fdce5"
+  }
+}

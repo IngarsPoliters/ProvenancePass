@@ -127,14 +127,31 @@ generate_sidecar() {
     
     log "Generating sidecar passports in $dir"
     
-    mkdir -p "$dir/sidecar"
-    cp "$dir"/*.{txt,pdf,png,docx} "$dir/sidecar/" 2>/dev/null || true
+    # Create the correct directory structure: examples/out/pass/sidecar/
+    mkdir -p "$dir/pass/sidecar"
+    cp "$dir"/*.{txt,pdf,png,docx} "$dir/pass/sidecar/" 2>/dev/null || true
     
-    for file in "$dir/sidecar"/*; do
+    for file in "$dir/pass/sidecar"/*; do
         if [[ -f "$file" ]]; then
             log "Creating passport for $(basename "$file")"
-            pp wrap --in "$file" --out "$file" --sign "$key_path" --step "Test vector generation"
-            success "Created: $file.passport.json"
+            # Use a no-op command to create sidecar without actual processing
+            pp wrap --in "$file" --out "$file" --sign "$key_path" --step "Test vector generation" --run "true"
+            
+            if [[ -f "$file.passport.json" ]]; then
+                success "Created: $file.passport.json"
+                
+                # Verify the file immediately after creation
+                log "Verifying $(basename "$file")..."
+                if pp verify "$file" --fail-on-missing --revocations https://data.provenancepass.com/revocations.json; then
+                    success "Verification PASSED: $(basename "$file")"
+                else
+                    error "Verification FAILED: $(basename "$file")"
+                    return 1
+                fi
+            else
+                error "Failed to create passport for $(basename "$file")"
+                return 1
+            fi
         fi
     done
 }
@@ -151,18 +168,18 @@ generate_c2pa() {
     
     log "Generating C2PA embedded files in $dir"
     
-    mkdir -p "$dir/c2pa"
+    mkdir -p "$dir/pass/c2pa"
     
     # Copy supported formats for C2PA
-    cp "$dir/image.png" "$dir/c2pa/" 2>/dev/null || true
-    cp "$dir/document.pdf" "$dir/c2pa/" 2>/dev/null || true
+    cp "$dir/image.png" "$dir/pass/c2pa/" 2>/dev/null || true
+    cp "$dir/document.pdf" "$dir/pass/c2pa/" 2>/dev/null || true
     
-    for file in "$dir/c2pa"/*; do
+    for file in "$dir/pass/c2pa"/*; do
         if [[ -f "$file" ]]; then
             log "Embedding C2PA passport in $(basename "$file")"
             
             # First create a sidecar passport
-            pp wrap "$file" --sign "$key_path" --output "$file.passport.json"
+            pp wrap --in "$file" --out "$file" --sign "$key_path" --step "C2PA preparation" --run "true"
             
             # Then embed it
             if pp embed "$file" --passport "$file.passport.json"; then
@@ -183,20 +200,20 @@ generate_docx_pointer() {
     
     log "Generating DOCX pointer files in $dir"
     
-    mkdir -p "$dir/docx"
-    cp "$dir/document.docx" "$dir/docx/"
+    mkdir -p "$dir/pass/docx"
+    cp "$dir/document.docx" "$dir/pass/docx/"
     
-    local docx_file="$dir/docx/document.docx"
+    local docx_file="$dir/pass/docx/document.docx"
     
     # Create passport and embed as pointer
-    pp wrap "$docx_file" --sign "$key_path" --output "$docx_file.passport.json"
+    pp wrap --in "$docx_file" --out "$docx_file" --sign "$key_path" --step "DOCX pointer generation" --run "true"
     
     if pp embed "$docx_file" --passport "$docx_file.passport.json"; then
         success "Created DOCX with pointer: $docx_file"
         
         # Create sidecar file for pointer resolution
         local basename=$(basename "$docx_file" .docx)
-        local sidecar_path="$dir/docx/$basename.passport.json"
+        local sidecar_path="$dir/pass/docx/$basename.passport.json"
         cp "$docx_file.passport.json" "$sidecar_path"
         success "Created sidecar for pointer: $sidecar_path"
     else
@@ -213,8 +230,8 @@ generate_tampered() {
     mkdir -p "$dir/tampered"
     
     # Copy files with valid passports
-    cp "$dir/sidecar/document.txt" "$dir/tampered/"
-    cp "$dir/sidecar/document.txt.passport.json" "$dir/tampered/"
+    cp "$dir/pass/sidecar/document.txt" "$dir/tampered/"
+    cp "$dir/pass/sidecar/document.txt.passport.json" "$dir/tampered/"
     
     # Tamper with the file content
     echo "This is a TAMPERED test document for provenance verification." > "$dir/tampered/document.txt"
@@ -246,7 +263,7 @@ generate_test_outputs() {
     mkdir -p "$output_dir"
     
     # Test valid sidecar
-    if pp verify "$dir/sidecar/document.txt" --json > "$output_dir/sidecar-pass.json" 2>/dev/null; then
+    if pp verify "$dir/pass/sidecar/document.txt" --json > "$output_dir/sidecar-pass.json" 2>/dev/null; then
         success "Generated: sidecar-pass.json"
     fi
     
@@ -261,15 +278,15 @@ generate_test_outputs() {
     fi
     
     # Test C2PA if available
-    if [[ -f "$dir/c2pa/image.png" ]]; then
-        if pp verify "$dir/c2pa/image.png" --json > "$output_dir/c2pa-pass.json" 2>/dev/null; then
+    if [[ -f "$dir/pass/c2pa/image.png" ]]; then
+        if pp verify "$dir/pass/c2pa/image.png" --json > "$output_dir/c2pa-pass.json" 2>/dev/null; then
             success "Generated: c2pa-pass.json"
         fi
     fi
     
     # Test DOCX pointer
-    if [[ -f "$dir/docx/document.docx" ]]; then
-        if pp verify "$dir/docx/document.docx" --json > "$output_dir/docx-pass.json" 2>/dev/null; then
+    if [[ -f "$dir/pass/docx/document.docx" ]]; then
+        if pp verify "$dir/pass/docx/document.docx" --json > "$output_dir/docx-pass.json" 2>/dev/null; then
             success "Generated: docx-pass.json"
         fi
     fi
@@ -312,9 +329,9 @@ Generated on: $(date)
 
 ## Directory Structure
 
-- \`sidecar/\` - Files with .passport.json sidecar files (PASS)
-- \`c2pa/\` - Files with C2PA embedded passports (PASS)
-- \`docx/\` - DOCX files with pointer-based passports (PASS)
+- \`pass/sidecar/\` - Files with .passport.json sidecar files (PASS)
+- \`pass/c2pa/\` - Files with C2PA embedded passports (PASS)
+- \`pass/docx/\` - DOCX files with pointer-based passports (PASS)
 - \`tampered/\` - Files with valid passports but tampered content (FAIL)
 - \`orphaned/\` - Files without any passports (WARNING)
 - \`expected/\` - Expected JSON outputs for verification
@@ -329,18 +346,18 @@ Run verification on all test vectors:
 pp verify --glob "**/*" --json
 
 # Verify specific categories
-pp verify --glob "sidecar/*" --json
-pp verify --glob "c2pa/*" --json
-pp verify --glob "docx/*" --json
+pp verify --glob "pass/sidecar/*" --json
+pp verify --glob "pass/c2pa/*" --json
+pp verify --glob "pass/docx/*" --json
 pp verify --glob "tampered/*" --json
 pp verify --glob "orphaned/*" --json
 \`\`\`
 
 ## Expected Results
 
-- **sidecar/***: All PASS
-- **c2pa/***: All PASS (if c2patool available)
-- **docx/***: All PASS
+- **pass/sidecar/***: All PASS
+- **pass/c2pa/***: All PASS (if c2patool available)
+- **pass/docx/***: All PASS
 - **tampered/***: All FAIL (hash mismatch)
 - **orphaned/***: All WARNING (no passport found)
 EOF

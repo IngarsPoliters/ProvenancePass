@@ -1,0 +1,41 @@
+{
+  "version": "0.1",
+  "artifact": {
+    "sha256": "09e6800aca507609992c543b49f2e860a2ef6b019b7367a0747fc69df9a5d044",
+    "mime": "image/png",
+    "name": "image.png",
+    "size": 68,
+    "created_at": "2025-08-19T16:20:43.515Z",
+    "hash_binding": "bytes",
+    "byte_size": 68
+  },
+  "inputs": [
+    {
+      "type": "source",
+      "sha256": "09e6800aca507609992c543b49f2e860a2ef6b019b7367a0747fc69df9a5d044",
+      "name": "image.png",
+      "size": 68,
+      "role": "input"
+    }
+  ],
+  "steps": [
+    {
+      "action": "Test vector generation",
+      "tool": "true",
+      "command": "true",
+      "started_at": "2025-08-19T16:20:43.512Z",
+      "ended_at": "2025-08-19T16:20:43.515Z",
+      "actor": {
+        "type": "software",
+        "id": "pp-cli"
+      }
+    }
+  ],
+  "policy_checks": [],
+  "signature": {
+    "algo": "ed25519",
+    "public_key": "effcf227033fc29ffb5d1501ecc16f61b957ad8626e4cb4d6fa5f68d20628ec1",
+    "signature": "0cb294853320d68cea6abbb00e4dd86d24348c08628196b0c05110d7151cd9694d2478eb7f5e74a2bf35e72f15d50cfc2ae2713d5e1af823be8f89a24a54b709",
+    "key_id": "ppk_a9855ab4b85fdce5"
+  }
+}
