@@ -1,7 +1,7 @@
 {
-  "name": "@passport/cli",
+  "name": "@provenancepass/cli",
   "version": "0.1.0",
-  "description": "TypeScript CLI & Node SDK for Provenance Passport",
+  "description": "CLI tool for creating and verifying cryptographic provenance receipts for digital artifacts",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -39,7 +39,19 @@
   "keywords": [
     "cli",
     "provenance",
-    "verification"
+    "verification",
+    "cryptography",
+    "c2pa",
+    "digital-signatures"
   ],
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IngarsPoliters/ProvenancePass.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://provenancepass.com",
+  "bugs": {
+    "url": "https://github.com/IngarsPoliters/ProvenancePass/issues"
+  }
 }

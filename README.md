@@ -9,21 +9,23 @@ Verifiable digital provenance for artifacts, enabling cryptographic proof of aut
 ### CLI Quickstart
 
 ```bash
-# Install the CLI
-npm install -g @provenancepass/cli
+# One-time usage (recommended)
+npx @provenancepass/cli@latest verify document.pdf \
+  --revocations https://data.provenancepass.com/revocations.json
 
-# Verify a file with revocation checking
+# Or install globally
+npm install -g @provenancepass/cli
 pp verify document.pdf \
   --revocations https://data.provenancepass.com/revocations.json
 ```
 
 ## Architecture
 
-- **`@passport/cli`** - TypeScript CLI & Node SDK for creating and verifying provenance records
-- **`@passport/viewer`** - Web-based drag-drop verifier for interactive validation
+- **`@provenancepass/cli`** - TypeScript CLI & Node SDK for creating and verifying provenance records
+- **`@provenancepass/viewer`** - Web-based drag-drop verifier for interactive validation
 - **`verify-passport`** - GitHub Action for automated CI/CD verification
 - **`provenance-passport`** - Python wrapper for broader ecosystem integration
-- **`@passport/manifest-store`** - Optional API service for receipt storage by SHA-256
+- **`@provenancepass/manifest-store`** - Optional API service for receipt storage by SHA-256
 
 ## Quick Start
 
