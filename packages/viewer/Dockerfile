@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────
 # Viewer: packages/viewer (Vite build → Nginx serve)
-# Build args you will set in Coolify:
+# Build args supplied by Coolify as Build Variables:
 #   VITE_REVOCATIONS_URL=https://data.provenancepass.com/revocations.json
 #   (optional) VITE_MANIFEST_URL=https://data.provenancepass.com/manifest/
 # ─────────────────────────────────────────────────────────────
@@ -26,8 +26,16 @@ RUN npm run build
 
 # Runtime (static) stage
 FROM nginx:1.27-alpine
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+# Nginx config & static files
 COPY packages/viewer/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/packages/viewer/dist /usr/share/nginx/html
 
 EXPOSE 80
-HEALTHCHECK CMD wget -qO- http://localhost/healthz || exit 1
+
+# Robust healthcheck hitting an explicit /healthz route
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -fsS http://localhost/healthz || exit 1
