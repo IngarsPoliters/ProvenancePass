@@ -1,0 +1,13 @@
+# Ignore big/unnecessary stuff in Docker build contexts
+.git
+**/node_modules
+**/dist
+**/build
+**/.vite
+**/.cache
+**/.DS_Store
+**/coverage
+**/*.log
+**/.env*
+**/.pytest_cache
+**/__pycache__

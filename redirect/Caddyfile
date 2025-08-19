@@ -1,0 +1,9 @@
+:80 {
+  @healthz path /healthz
+  respond @healthz 200 {
+    body "ok"
+  }
+
+  # Permanent redirect to www
+  redir https://www.provenancepass.com{uri} 301
+}
