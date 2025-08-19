@@ -5,6 +5,7 @@ import { createWrapCommand } from './cmd/wrap.js';
 import { createVerifyCommand } from './cmd/verify.js';
 import { createKeygenCommand } from './cmd/keygen.js';
 import { createFingerprintCommand } from './cmd/fingerprint.js';
+import { createEmbedCommand } from './cmd/embed.js';
 
 const program = new Command();
 
@@ -20,5 +21,6 @@ program.addCommand(createWrapCommand());
 program.addCommand(createVerifyCommand());
 program.addCommand(createKeygenCommand());
 program.addCommand(createFingerprintCommand());
+program.addCommand(createEmbedCommand());
 
 program.parse();

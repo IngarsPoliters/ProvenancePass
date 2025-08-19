@@ -6,6 +6,7 @@ import fg from 'fast-glob';
 import { sha256File } from '../lib/hash.js';
 import { verifyPassport } from '../lib/sign.js';
 import { validatePassport } from '../lib/schema.js';
+import { inspectC2pa } from '../lib/c2pa.js';
 
 interface VerifyOptions {
   glob?: string;
@@ -21,6 +22,7 @@ interface VerificationResult {
   file: string;
   status: 'pass' | 'fail' | 'warning';
   passport_found: boolean;
+  passport_source?: 'c2pa' | 'sidecar';
   signature_valid?: boolean;
   key_id?: string;
   key_status?: 'active' | 'revoked' | 'unknown';
@@ -137,27 +139,56 @@ async function verifyFile(
     };
   }
 
-  const passportPath = findPassportFile(file);
+  // First, try to extract passport from C2PA manifest
+  let passport: any = null;
+  let passportSource: 'c2pa' | 'sidecar' = 'sidecar';
   
-  if (!passportPath) {
-    return {
-      file: filePath,
-      status: 'warning',
-      passport_found: false,
-      error: 'No passport file found'
-    };
+  try {
+    const c2paData = await inspectC2pa(file);
+    if (c2paData && c2paData.receipt) {
+      passport = c2paData.receipt;
+      passportSource = 'c2pa';
+    }
+  } catch (error) {
+    // C2PA inspection failed, continue to sidecar fallback
+  }
+
+  // If no C2PA passport found, fall back to sidecar file
+  if (!passport) {
+    const passportPath = findPassportFile(file);
+    
+    if (!passportPath) {
+      return {
+        file: filePath,
+        status: 'warning',
+        passport_found: false,
+        error: 'No passport found (neither C2PA embedded nor sidecar file)'
+      };
+    }
+
+    try {
+      const passportContent = readFileSync(passportPath, 'utf-8');
+      passport = JSON.parse(passportContent);
+      passportSource = 'sidecar';
+    } catch (error) {
+      return {
+        file: filePath,
+        status: 'fail',
+        passport_found: true,
+        passport_source: 'sidecar',
+        error: `Failed to parse sidecar passport: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
   }
 
   try {
-    const passportContent = readFileSync(passportPath, 'utf-8');
-    const passport = JSON.parse(passportContent);
-
     const validation = validatePassport(passport);
     if (!validation.valid) {
       return {
         file: filePath,
         status: 'fail',
         passport_found: true,
+        passport_source: passportSource,
         error: `Invalid passport format: ${validation.errors?.join(', ')}`
       };
     }
@@ -168,6 +199,7 @@ async function verifyFile(
         file: filePath,
         status: 'fail',
         passport_found: true,
+        passport_source: passportSource,
         signature_valid: false,
         artifact_hash: actualHash,
         error: 'Content hash mismatch - file may have been modified',
@@ -181,6 +213,7 @@ async function verifyFile(
         file: filePath,
         status: 'fail',
         passport_found: true,
+        passport_source: passportSource,
         signature_valid: false,
         error: 'Passport signature verification failed'
       };
@@ -197,6 +230,7 @@ async function verifyFile(
           file: filePath,
           status: 'fail',
           passport_found: true,
+          passport_source: passportSource,
           signature_valid: true,
           key_id: keyId,
           key_status: keyStatus,
@@ -209,6 +243,7 @@ async function verifyFile(
       file: filePath,
       status: 'pass',
       passport_found: true,
+      passport_source: passportSource,
       signature_valid: true,
       key_id: keyId,
       key_status: keyStatus,
@@ -223,6 +258,7 @@ async function verifyFile(
       file: filePath,
       status: 'fail',
       passport_found: true,
+      passport_source: passportSource,
       error: `Failed to process passport: ${error instanceof Error ? error.message : String(error)}`
     };
   }
@@ -281,6 +317,7 @@ function printResult(result: VerificationResult): void {
   if (result.status === 'pass') {
     console.log(`📄 Artifact: ${basename(result.file)} (sha256: ${result.artifact_hash?.slice(0, 12)}...)`);
     console.log(`🔐 Signature: Valid (${result.key_id})`);
+    console.log(`📋 Source: ${result.passport_source === 'c2pa' ? 'C2PA embedded manifest' : 'Sidecar file'}`);
     if (result.created_at) {
       console.log(`⏰ Created: ${result.created_at}`);
     }
@@ -294,6 +331,9 @@ function printResult(result: VerificationResult): void {
   } else {
     if (result.artifact_hash) {
       console.log(`📄 Artifact: ${basename(result.file)} (sha256: ${result.artifact_hash.slice(0, 12)}...)`);
+    }
+    if (result.passport_source) {
+      console.log(`📋 Source: ${result.passport_source === 'c2pa' ? 'C2PA embedded manifest' : 'Sidecar file'}`);
     }
     if (result.signature_valid === false) {
       console.log(`🔐 Signature: INVALID - does not match content`);
