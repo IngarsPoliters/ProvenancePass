@@ -1,4 +1,4 @@
-import { ed25519 } from '@noble/ed25519'
+import * as ed25519 from '@noble/ed25519'
 import type { ProvenancePassport } from '../types'
 
 /**
@@ -36,8 +36,8 @@ export async function verifyPassportSignature(passport: ProvenancePassport): Pro
 
     // Extract signature components
     const signature = passport.signature
-    if (signature.algorithm !== 'ed25519') {
-      console.warn('Unsupported signature algorithm:', signature.algorithm)
+    if (signature.algo !== 'ed25519') {
+      console.warn('Unsupported signature algorithm:', signature.algo)
       return false
     }
 
@@ -49,17 +49,24 @@ export async function verifyPassportSignature(passport: ProvenancePassport): Pro
     const canonicalJson = canonicalizeJSON(passportWithoutSignature)
     const message = new TextEncoder().encode(canonicalJson)
 
-    // Extract public key from key_id
-    // key_id format: ppk_<first16chars_of_sha256_of_public_key>
+    // Extract public key from signature
+    if (!signature.public_key) {
+      console.warn('No public key found in signature')
+      return false
+    }
+
+    // Verify key_id matches public key
     if (!signature.key_id.startsWith('ppk_')) {
       console.warn('Invalid key ID format:', signature.key_id)
       return false
     }
 
-    // For now, we can't verify without the actual public key
-    // In a real implementation, we'd need a key registry or embedded public key
-    console.warn('Cannot verify signature without public key registry')
-    return true // Assume valid for demo purposes
+    // Convert hex strings to bytes
+    const publicKeyBytes = new Uint8Array(signature.public_key.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16)))
+    const signatureBytes = new Uint8Array(signature.signature.match(/.{1,2}/g)!.map((byte: string) => parseInt(byte, 16)))
+
+    // Verify the signature
+    return await ed25519.verify(signatureBytes, message, publicKeyBytes)
     
   } catch (error) {
     console.warn('Signature verification failed:', error)

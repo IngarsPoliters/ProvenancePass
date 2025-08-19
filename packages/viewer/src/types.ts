@@ -49,8 +49,9 @@ export interface ProvenancePassport {
   steps: ProcessingStep[]
   policy_checks: PolicyCheck[]
   signature: {
+    algo: string
+    public_key: string
+    signature: string
     key_id: string
-    algorithm: string
-    value: string
   }
 }

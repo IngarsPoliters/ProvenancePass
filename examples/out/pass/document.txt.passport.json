@@ -5,7 +5,7 @@
     "mime": "text/plain",
     "name": "document.txt",
     "size": 23,
-    "created_at": "2025-08-19T11:51:29.460Z",
+    "created_at": "2025-08-19T12:07:11.602Z",
     "hash_binding": "bytes",
     "byte_size": 23
   },
@@ -23,8 +23,8 @@
       "action": "No-op signing",
       "tool": "cp",
       "command": "cp /home/coder/project/provenancepass/examples/assets/document.txt /home/coder/project/provenancepass/examples/out/pass/document.txt",
-      "started_at": "2025-08-19T11:51:29.456Z",
-      "ended_at": "2025-08-19T11:51:29.460Z",
+      "started_at": "2025-08-19T12:07:11.592Z",
+      "ended_at": "2025-08-19T12:07:11.602Z",
       "actor": {
         "type": "software",
         "id": "pp-cli"
@@ -34,8 +34,8 @@
   "policy_checks": [],
   "signature": {
     "algo": "ed25519",
-    "public_key": "c9c68bfcf3d17f6447883ad2869b8de5674216a2f72811616c9cecb40a5560a7",
-    "signature": "84369ef25eac135b43a5c2b97cb4b3a4367b29822d99765b6815dca7288d364fd81041860848192ce5ce7a3b86b9159460ca860a453a434687623d07263d0d0d",
-    "key_id": "ppk_b0726f57510b1d0a"
+    "public_key": "ec5fbfb428ae6f21cad1231ec714ae887d2b70e305c4f4c09e365ccfcb9c1f58",
+    "signature": "def3495e254a72975e3a9102e85a86b5b5fc9c21fa280f7812abf822f8a5d8704c860634b4eef20242cc092206d14519e3c2b10025097a5b8b39a93d2796ed0c",
+    "key_id": "ppk_5608cddd4082789b"
   }
 }
