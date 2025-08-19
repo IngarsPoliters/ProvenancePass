@@ -73,6 +73,8 @@ dist
 # Gatsby files
 .cache/
 public
+# Exception: Allow data package public assets
+!packages/data/public/
 
 # Storybook build outputs
 .out

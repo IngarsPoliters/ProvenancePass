@@ -11,3 +11,9 @@
 **/.env*
 **/.pytest_cache
 **/__pycache__
+
+# --- include data server assets in build context ---
+!packages/data/nginx.conf
+!packages/data/public/**
+!packages/data/public/manifest/**
+!packages/data/public/revocations.json
