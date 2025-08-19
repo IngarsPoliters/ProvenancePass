@@ -29,6 +29,42 @@ function App() {
     setError(null)
   }, [])
 
+  const handleAutoloadSample = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    setVerification(null)
+
+    try {
+      // Fetch the sample file and its passport
+      const [fileResponse, passportResponse] = await Promise.all([
+        fetch('https://data.provenancepass.com/samples/pass/sidecar/document.txt'),
+        fetch('https://data.provenancepass.com/samples/pass/sidecar/document.txt.passport.json')
+      ])
+
+      if (!fileResponse.ok || !passportResponse.ok) {
+        throw new Error('Failed to fetch sample files')
+      }
+
+      const [fileBlob, passportBlob] = await Promise.all([
+        fileResponse.blob(),
+        passportResponse.blob()
+      ])
+
+      // Create File objects to simulate user drop
+      const files = [
+        new File([fileBlob], 'document.txt', { type: 'text/plain' }),
+        new File([passportBlob], 'document.txt.passport.json', { type: 'application/json' })
+      ]
+
+      const result = await verifyFiles(files)
+      setVerification(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load sample')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   return (
     <div className="container">
       <header className="header">
@@ -56,6 +92,41 @@ function App() {
           </a>
         </div>
       </header>
+
+      <div className="try-sample-section">
+        <h3>🧪 Try a Sample File</h3>
+        <p>
+          Test the viewer with a known-good signed document:
+        </p>
+        <div className="try-sample-actions">
+          <button 
+            onClick={handleAutoloadSample} 
+            className="cta-button primary"
+            disabled={loading}
+          >
+            ⚡ Try Sample Now
+          </button>
+          <div className="download-links">
+            <span>Or download manually:</span>
+            <a 
+              href="https://data.provenancepass.com/samples/pass/sidecar/document.txt" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="sample-link"
+            >
+              📄 document.txt
+            </a>
+            <a 
+              href="https://data.provenancepass.com/samples/pass/sidecar/document.txt.passport.json" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="sample-link"
+            >
+              🔏 passport.json
+            </a>
+          </div>
+        </div>
+      </div>
 
       <main>
         {!verification && !loading && (
