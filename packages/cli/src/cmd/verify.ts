@@ -1,10 +1,11 @@
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'fs';
-import { resolve, basename } from 'path';
+import { resolve, basename, join, dirname } from 'path';
 import { request } from 'undici';
 import fg from 'fast-glob';
 import { sha256File } from '../lib/hash.js';
-import { verifyPassport } from '../lib/sign.js';
+import { verifyPassport, canonicalizeJSON } from '../lib/sign.js';
+import * as ed25519 from '@noble/ed25519';
 import { validatePassport } from '../lib/schema.js';
 import { inspectC2pa, inspectDocxCustom } from '../lib/c2pa.js';
 
@@ -16,6 +17,8 @@ interface VerifyOptions {
   trustBundle?: string;
   failOnMissing?: boolean;
   revocations?: string;
+  manifest?: string;
+  revocationPubkey?: string;
 }
 
 interface VerificationResult {
@@ -52,6 +55,8 @@ export function createVerifyCommand(): Command {
     .option('--trust-bundle <path>', 'Additional trusted public keys file')
     .option('--fail-on-missing', 'Exit with error if passport is missing during verification')
     .option('--revocations <url>', 'Override revocation list URL')
+    .option('--revocation-pubkey <path>', 'Public key file for signed revocation feed verification')
+    .option('--manifest <url>', 'Manifest URL for DOCX pointer fallback')
     .action(async (path: string | undefined, options: VerifyOptions) => {
       try {
         await verifyCommand(path, options);
@@ -89,7 +94,7 @@ async function verifyCommand(inputPath: string | undefined, options: VerifyOptio
   let revokedKeys: Set<string> | null = null;
 
   if (options.checkRevocations) {
-    revokedKeys = await fetchRevokedKeys(options.revocations);
+    revokedKeys = await fetchRevokedKeys(options.revocations, options.revocationPubkey);
   }
 
   for (const file of filesToVerify) {
@@ -126,7 +131,7 @@ async function verifyCommand(inputPath: string | undefined, options: VerifyOptio
 async function verifyFile(
   filePath: string, 
   revokedKeys: Set<string> | null, 
-  _options: VerifyOptions
+  options: VerifyOptions
 ): Promise<VerificationResult> {
   const file = resolve(filePath);
   
@@ -156,9 +161,65 @@ async function verifyFile(
   // If no C2PA passport and this is a DOCX file, try custom XML parts
   if (!passport && file.toLowerCase().endsWith('.docx')) {
     try {
-      const docxPassport = await inspectDocxCustom(file);
-      if (docxPassport) {
-        passport = docxPassport;
+      const docxPointer = await inspectDocxCustom(file);
+      if (docxPointer && docxPointer.type === 'provenance-passport-pointer') {
+        // This is a pointer, need to find the actual receipt
+        const fileBasename = basename(file, '.docx');
+        const fileDir = dirname(file);
+        const sidecarPath = join(fileDir, `${fileBasename}.passport.json`);
+        
+        if (existsSync(sidecarPath)) {
+          // Found sidecar file next to DOCX
+          try {
+            const passportContent = readFileSync(sidecarPath, 'utf-8');
+            passport = JSON.parse(passportContent);
+            passportSource = 'sidecar';
+          } catch (error) {
+            return {
+              file: filePath,
+              status: 'fail',
+              passport_found: true,
+              passport_source: 'sidecar',
+              error: `Failed to parse sidecar passport: ${error instanceof Error ? error.message : String(error)}`
+            };
+          }
+        } else if (options.manifest && docxPointer.sha256) {
+          // Try to fetch from manifest URL
+          try {
+            const manifestUrl = `${options.manifest}/${docxPointer.sha256}`;
+            const response = await request(manifestUrl);
+            
+            if (response.statusCode === 200) {
+              const body = await response.body.text();
+              passport = JSON.parse(body);
+              passportSource = 'sidecar';
+            } else {
+              return {
+                file: filePath,
+                status: 'warning',
+                passport_found: false,
+                error: `Manifest URL returned HTTP ${response.statusCode}: ${manifestUrl}`
+              };
+            }
+          } catch (error) {
+            return {
+              file: filePath,
+              status: 'warning',
+              passport_found: false,
+              error: `Failed to fetch from manifest URL: ${error instanceof Error ? error.message : String(error)}`
+            };
+          }
+        } else {
+          return {
+            file: filePath,
+            status: 'warning',
+            passport_found: false,
+            error: 'DOCX contains pointer but no sidecar file found and no --manifest URL provided'
+          };
+        }
+      } else if (docxPointer) {
+        // Legacy full passport in DOCX
+        passport = docxPointer;
         passportSource = 'docx-custom';
       }
     } catch (error) {
@@ -207,7 +268,9 @@ async function verifyFile(
     }
 
     const actualHash = await sha256File(file);
-    if (passport.artifact.sha256 !== actualHash) {
+    
+    // Only compare bytes hash for sidecar and C2PA sources, not for fallback
+    if ((passportSource === 'sidecar' || passportSource === 'c2pa') && passport.artifact.sha256 !== actualHash) {
       return {
         file: filePath,
         status: 'fail',
@@ -291,7 +354,7 @@ function findPassportFile(filePath: string): string | null {
   return null;
 }
 
-async function fetchRevokedKeys(revocationsUrl?: string): Promise<Set<string> | null> {
+async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkeyPath?: string): Promise<Set<string> | null> {
   const url = revocationsUrl || 'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json';
   
   try {
@@ -304,6 +367,35 @@ async function fetchRevokedKeys(revocationsUrl?: string): Promise<Set<string> | 
 
     const body = await response.body.text();
     const revocations = JSON.parse(body);
+    
+    // If a public key is provided, verify the signature
+    if (revocationPubkeyPath) {
+      if (!revocations.signature) {
+        console.warn('⚠️  Warning: Revocation feed signature required but not found');
+        return null;
+      }
+      
+      try {
+        const pubkeyContent = readFileSync(revocationPubkeyPath, 'utf-8');
+        const publicKey = pubkeyContent.trim();
+        
+        // Create canonical version without signature for verification
+        const { signature, ...dataToVerify } = revocations;
+        const canonicalData = canonicalizeJSON(dataToVerify);
+        const messageBytes = Buffer.from(canonicalData, 'utf-8');
+        const signatureBytes = Buffer.from(signature, 'hex');
+        const publicKeyBytes = Buffer.from(publicKey, 'hex');
+        
+        const isValid = await ed25519.verify(signatureBytes, messageBytes, publicKeyBytes);
+        if (!isValid) {
+          console.warn('⚠️  Warning: Revocation feed signature verification failed');
+          return null;
+        }
+      } catch (error) {
+        console.warn(`⚠️  Warning: Failed to verify revocation feed signature: ${error instanceof Error ? error.message : String(error)}`);
+        return null;
+      }
+    }
     
     const revokedKeys = new Set<string>();
     if (revocations.revoked_keys && Array.isArray(revocations.revoked_keys)) {

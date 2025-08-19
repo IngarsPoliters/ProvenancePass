@@ -1,0 +1,170 @@
+name: 'Verify Provenance Passport'
+description: 'Verify cryptographic provenance of artifacts using Provenance Passport'
+author: 'ProvenancePass'
+branding:
+  icon: 'shield-check'
+  color: 'green'
+
+inputs:
+  glob:
+    description: 'Glob pattern for files to verify'
+    required: false
+    default: '**/*.{pdf,png,jpg,jpeg,docx}'
+  revocations_url:
+    description: 'URL for revocation list'
+    required: false
+    default: 'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json'
+  manifest_url:
+    description: 'Manifest URL for DOCX pointer fallback'
+    required: false
+
+outputs:
+  total:
+    description: 'Total number of files checked'
+  passed:
+    description: 'Number of files that passed verification'
+  failed:
+    description: 'Number of files that failed verification'
+  warnings:
+    description: 'Number of files with warnings'
+  success:
+    description: 'Whether all verifications passed'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install ProvenancePass CLI
+      shell: bash
+      run: npm install -g @provenancepass/cli
+      
+    - name: Install c2patool (Linux)
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          wget -q https://github.com/contentauth/c2patool/releases/latest/download/c2patool-linux-intel -O /tmp/c2patool
+          chmod +x /tmp/c2patool
+          sudo mv /tmp/c2patool /usr/local/bin/c2patool
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install c2patool
+        else
+          echo "::warning::c2patool installation not supported on $RUNNER_OS, will fall back to sidecar verification"
+        fi
+        
+    - name: Verify Passports
+      shell: bash
+      run: |
+        cmd="pp verify --glob '${{ inputs.glob }}' --json"
+        
+        if [[ -n '${{ inputs.revocations_url }}' ]]; then
+          cmd="$cmd --revocations '${{ inputs.revocations_url }}'"
+        fi
+        
+        if [[ -n '${{ inputs.manifest_url }}' ]]; then
+          cmd="$cmd --manifest '${{ inputs.manifest_url }}'"
+        fi
+        
+        echo "Running: $cmd"
+        eval "$cmd" > verification_results.json
+        
+    - name: Process Results
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const core = require('@actions/core');
+          
+          try {
+            const resultsContent = fs.readFileSync('verification_results.json', 'utf-8');
+            const verification = JSON.parse(resultsContent);
+            const { summary, results } = verification;
+            
+            // Set outputs
+            core.setOutput('total', summary.total.toString());
+            core.setOutput('passed', summary.passed.toString());
+            core.setOutput('failed', summary.failed.toString());
+            core.setOutput('warnings', summary.warnings.toString());
+            core.setOutput('success', (summary.failed === 0).toString());
+            
+            // Process each result and add annotations
+            for (const result of results) {
+              if (result.status === 'fail') {
+                const message = result.error || 'Verification failed';
+                const details = result.details ? `\n\n${result.details}` : '';
+                
+                core.error(
+                  `❌ ${result.file}: ${message}${details}\n\n` +
+                  `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+                  {
+                    file: result.file,
+                    title: 'Provenance Passport Verification Failed'
+                  }
+                );
+              } else if (result.status === 'warning') {
+                const message = result.error || 'Verification warning';
+                const details = result.details ? `\n\n${result.details}` : '';
+                
+                core.warning(
+                  `⚠️  ${result.file}: ${message}${details}\n\n` +
+                  `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+                  {
+                    file: result.file,
+                    title: 'Provenance Passport Verification Warning'
+                  }
+                );
+              }
+            }
+            
+            // Create summary
+            const summaryLines = [
+              '## 🔐 Provenance Passport Verification Results',
+              '',
+              `📊 **Summary**: ${summary.passed} passed, ${summary.failed} failed, ${summary.warnings} warning${summary.warnings !== 1 ? 's' : ''}`,
+              ''
+            ];
+            
+            if (summary.failed > 0) {
+              summaryLines.push('❌ **Files that failed verification:**');
+              const failedFiles = results.filter(r => r.status === 'fail');
+              for (const result of failedFiles) {
+                summaryLines.push(`- \`${result.file}\`: ${result.error || 'Verification failed'}`);
+              }
+              summaryLines.push('');
+            }
+            
+            if (summary.warnings > 0) {
+              summaryLines.push('⚠️  **Files with warnings:**');
+              const warningFiles = results.filter(r => r.status === 'warning');
+              for (const result of warningFiles) {
+                summaryLines.push(`- \`${result.file}\`: ${result.error || 'Warning'}`);
+              }
+              summaryLines.push('');
+            }
+            
+            if (summary.passed > 0) {
+              summaryLines.push('✅ **Successfully verified files:**');
+              const passedFiles = results.filter(r => r.status === 'pass');
+              for (const result of passedFiles) {
+                const sourceIcon = result.passport_source === 'c2pa' ? '🏷️' : 
+                                  result.passport_source === 'docx-custom' ? '📄' : '📋';
+                summaryLines.push(`- ${sourceIcon} \`${result.file}\` (${result.passport_source || 'sidecar'})`);
+              }
+              summaryLines.push('');
+            }
+            
+            summaryLines.push('📚 [Documentation](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md)');
+            
+            await core.summary.addRaw(summaryLines.join('\n')).write();
+            
+            // Fail the action if any files failed verification
+            if (summary.failed > 0) {
+              core.setFailed(`${summary.failed} file${summary.failed !== 1 ? 's' : ''} failed provenance verification`);
+            }
+            
+          } catch (error) {
+            core.setFailed(`Action failed: ${error.message}`);
+          }

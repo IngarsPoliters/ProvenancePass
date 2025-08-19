@@ -1,0 +1,119 @@
+name: Verify Provenance Passports
+
+# Trigger on pull requests and pushes to main
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  verify-provenance:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        # Fetch full history for comprehensive verification
+        fetch-depth: 0
+    
+    - name: Verify Provenance Passports
+      id: verify
+      uses: IngarsPoliters/ProvenancePass/packages/actions@main
+      with:
+        # Verify common media and document files
+        glob: '**/*.{pdf,png,jpg,jpeg,docx,mp4,wav}'
+        
+        # Optional: Use custom revocation list
+        # revocations_url: 'https://your-domain.com/revocations.json'
+        
+        # Optional: Manifest URL for DOCX pointer fallback
+        # manifest_url: 'https://your-domain.com/manifests'
+    
+    # Optional: Add custom handling based on results
+    - name: Handle verification results
+      if: always()
+      run: |
+        echo "Total files checked: ${{ steps.verify.outputs.total }}"
+        echo "Files passed: ${{ steps.verify.outputs.passed }}"
+        echo "Files failed: ${{ steps.verify.outputs.failed }}"
+        echo "Warnings: ${{ steps.verify.outputs.warnings }}"
+        echo "Overall success: ${{ steps.verify.outputs.success }}"
+    
+    # Optional: Comment on PR with results summary
+    - name: Comment on PR
+      if: github.event_name == 'pull_request' && (steps.verify.outputs.failed > 0 || steps.verify.outputs.warnings > 0)
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const failed = '${{ steps.verify.outputs.failed }}';
+          const warnings = '${{ steps.verify.outputs.warnings }}';
+          const total = '${{ steps.verify.outputs.total }}';
+          
+          let message = '## 🔐 Provenance Verification Results\n\n';
+          
+          if (failed > 0) {
+            message += `❌ **${failed} file(s) failed verification** - This PR cannot be merged until all files pass verification.\n\n`;
+            message += '**Common solutions:**\n';
+            message += '- Add missing `.passport.json` sidecar files\n';
+            message += '- Re-sign tampered files with valid keys\n';
+            message += '- Embed passports using C2PA for supported formats\n\n';
+          }
+          
+          if (warnings > 0) {
+            message += `⚠️ **${warnings} file(s) have warnings** - Consider adding provenance for better security.\n\n`;
+          }
+          
+          message += `📊 **Summary**: ${total} files checked\n\n`;
+          message += '📚 [Learn more about Provenance Passports](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md)';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message
+          });
+    
+    # Optional: Upload verification results as artifact
+    - name: Upload verification results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: provenance-verification-results
+        path: verification_results.json
+        retention-days: 30
+
+  # Optional: Separate job for different file types
+  verify-documents:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Verify Document Provenance
+      uses: IngarsPoliters/ProvenancePass/packages/actions@main
+      with:
+        glob: 'documents/**/*.{pdf,docx}'
+        manifest_url: 'https://docs.example.com/manifests'
+
+  # Optional: Matrix strategy for different environments
+  verify-matrix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            glob: '**/*.{pdf,png,jpg}'
+          - os: macos-latest
+            glob: '**/*.{mp4,mov,wav}'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Verify Provenance (Matrix)
+      uses: IngarsPoliters/ProvenancePass/packages/actions@main
+      with:
+        glob: ${{ matrix.glob }}

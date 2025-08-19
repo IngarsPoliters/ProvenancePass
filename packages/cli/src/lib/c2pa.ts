@@ -205,9 +205,17 @@ export async function embedDocxFallback(docxPath: string, receiptJson: any): Pro
       mkdirSync(customXmlDir, { recursive: true });
     }
     
-    // Write passport.json to customXml directory
-    const passportPath = join(customXmlDir, 'passport.json');
-    writeFileSync(passportPath, JSON.stringify(receiptJson, null, 2));
+    // Create pointer schema instead of full receipt
+    const pointer = {
+      version: '0.1',
+      type: 'provenance-passport-pointer',
+      sha256: receiptJson.artifact.sha256,
+      manifest_url: null // Will be set by external manifest if provided
+    };
+    
+    // Write provenance-passport.json to customXml directory
+    const passportPath = join(customXmlDir, 'provenance-passport.json');
+    writeFileSync(passportPath, JSON.stringify(pointer, null, 2));
     
     // Add relationship to document.xml.rels
     await addCustomXmlRelationship(tempDir);
@@ -231,8 +239,8 @@ export async function inspectDocxCustom(docxPath: string): Promise<any | null> {
     // Extract DOCX to temporary directory
     await extractZip(docxPath, tempDir);
     
-    // Check for passport.json in customXml
-    const passportPath = join(tempDir, 'customXml', 'passport.json');
+    // Check for provenance-passport.json in customXml
+    const passportPath = join(tempDir, 'customXml', 'provenance-passport.json');
     if (!existsSync(passportPath)) {
       return null;
     }
@@ -341,7 +349,7 @@ async function addCustomXmlRelationship(tempDir: string): Promise<void> {
   // Add our custom relationship
   const customRel = `  <Relationship Id="${relationshipId}" ` +
                    `Type="http://schemas.provenancepassport.org/customXml" ` +
-                   `Target="../customXml/passport.json"/>`;
+                   `Target="../customXml/provenance-passport.json"/>`;
   
   // Insert before closing </Relationships> tag
   relsContent = relsContent.replace(

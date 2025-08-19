@@ -32,6 +32,7 @@ C2PA embedding is supported for media file types that can contain metadata:
 
 ### Documents
 - PDF (.pdf)
+- DOCX (.docx) - Uses pointer-based fallback when C2PA is unavailable
 
 ### Audio
 - MP3 (.mp3)
@@ -39,6 +40,45 @@ C2PA embedding is supported for media file types that can contain metadata:
 - FLAC (.flac)
 
 **Note**: Plain text files, source code, and other non-media formats require sidecar files as they cannot contain embedded metadata.
+
+## DOCX Pointer-Based Fallback
+
+For DOCX files when C2PA embedding is not available, Provenance Passport uses a pointer-based approach that stores a minimal reference in the OOXML custom parts and relies on external receipt storage.
+
+### Why Pointer Approach is Required
+
+OOXML format (used by DOCX) has limitations when C2PA is not supported:
+- Large embedded JSON receipts can cause compatibility issues with older Office versions
+- Some document processors may strip or corrupt large custom XML parts
+- Network-based verification allows for centralized receipt management
+
+### Pointer Schema
+
+Instead of embedding the full receipt, a minimal pointer is stored in `customXml/provenance-passport.json`:
+
+```json
+{
+  "version": "0.1",
+  "type": "provenance-passport-pointer",
+  "sha256": "abc123...",
+  "manifest_url": null
+}
+```
+
+### Verification Process
+
+When verifying a DOCX with a pointer:
+
+1. **Sidecar lookup**: Look for `<basename>.passport.json` next to the DOCX file
+2. **Manifest fallback**: If `--manifest <url>` is provided, fetch `GET ${url}/{sha256}`
+3. **Warning on missing**: Return warning status if neither is found
+
+### Hash Verification
+
+For pointer-based fallback:
+- **No bytes hash comparison** is performed on the DOCX file itself
+- Hash verification only applies to sidecar files and C2PA embedded receipts
+- The pointer's SHA256 is used for manifest URL construction only
 
 ## C2PA Manifest Structure
 
