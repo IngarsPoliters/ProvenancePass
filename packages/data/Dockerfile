@@ -5,10 +5,10 @@ FROM nginx:alpine
 RUN apk add --no-cache curl
 
 # Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY packages/data/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy public data files
-COPY public/ /usr/share/nginx/html/
+COPY packages/data/public/ /usr/share/nginx/html/
 
 # Expose port 80
 EXPOSE 80
