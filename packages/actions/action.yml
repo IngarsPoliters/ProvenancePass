@@ -13,7 +13,7 @@ inputs:
   revocations_url:
     description: 'URL for revocation list'
     required: false
-    default: 'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json'
+    default: 'https://data.provenancepass.com/revocations.json'
   manifest_url:
     description: 'Manifest URL for DOCX pointer fallback'
     required: false
@@ -98,7 +98,7 @@ runs:
                 
                 core.error(
                   `❌ ${result.file}: ${message}${details}\n\n` +
-                  `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+                  `📚 Learn more: https://provenancepass.com/docs/embedding`,
                   {
                     file: result.file,
                     title: 'Provenance Passport Verification Failed'
@@ -110,7 +110,7 @@ runs:
                 
                 core.warning(
                   `⚠️  ${result.file}: ${message}${details}\n\n` +
-                  `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+                  `📚 Learn more: https://provenancepass.com/docs/embedding`,
                   {
                     file: result.file,
                     title: 'Provenance Passport Verification Warning'
@@ -156,7 +156,7 @@ runs:
               summaryLines.push('');
             }
             
-            summaryLines.push('📚 [Documentation](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md)');
+            summaryLines.push('📚 [Documentation](https://provenancepass.com/docs/embedding)');
             
             await core.summary.addRaw(summaryLines.join('\n')).write();
             

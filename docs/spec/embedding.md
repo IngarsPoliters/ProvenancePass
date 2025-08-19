@@ -88,7 +88,7 @@ When embedding a Provenance Passport, the following assertions are added to the 
 {
   "claim_generator": "provenancepass-cli/0.1.0",
   "claim_generator_info": [
-    "https://github.com/IngarsPoliters/ProvenancePass",
+    "https://provenancepass.com",
     "Provenance Passport CLI - Cryptographic provenance for digital artifacts"
   ],
   "title": "Provenance Passport for [artifact-name]",

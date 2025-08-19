@@ -56,7 +56,7 @@ export default defineConfig({
     // Provide default revocation URL if not set
     'process.env.REVOCATIONS_URL': JSON.stringify(
       process.env.REVOCATIONS_URL || 
-      'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json'
+      'https://data.provenancepass.com/revocations.json'
     )
   },
   server: {

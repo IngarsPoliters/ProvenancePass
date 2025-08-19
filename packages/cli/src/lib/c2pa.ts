@@ -57,7 +57,7 @@ export async function embedWithC2pa(file: string, receiptPath: string): Promise<
     const manifest: C2paManifest = {
       claim_generator: 'provenancepass-cli/0.1.0',
       claim_generator_info: [
-        'https://github.com/IngarsPoliters/ProvenancePass',
+        'https://provenancepass.com',
         'Provenance Passport CLI - Cryptographic provenance for digital artifacts'
       ],
       title: `Provenance Passport for ${receipt.artifact?.name || 'artifact'}`,

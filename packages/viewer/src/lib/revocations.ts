@@ -1,7 +1,7 @@
 import type { RevocationData } from '../types'
 
-const REVOCATIONS_URL = (process.env.REVOCATIONS_URL as string) || 
-  'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json'
+const REVOCATIONS_URL = import.meta.env.VITE_REVOCATIONS_URL
+  || 'https://data.provenancepass.com/revocations.json'
 
 let revocationCache: {
   data: RevocationData | null

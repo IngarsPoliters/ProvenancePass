@@ -55,7 +55,7 @@ async function run(): Promise<void> {
         
         core.error(
           `❌ ${result.file}: ${message}${details}\n\n` +
-          `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+          `📚 Learn more: https://provenancepass.com/docs/embedding`,
           {
             file: result.file,
             title: 'Provenance Passport Verification Failed'
@@ -67,7 +67,7 @@ async function run(): Promise<void> {
         
         core.warning(
           `⚠️  ${result.file}: ${message}${details}\n\n` +
-          `📚 Learn more: https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md`,
+          `📚 Learn more: https://provenancepass.com/docs/embedding`,
           {
             file: result.file,
             title: 'Provenance Passport Verification Warning'
@@ -121,7 +121,7 @@ async function run(): Promise<void> {
     
     summaryLines.push('---');
     summaryLines.push('');
-    summaryLines.push('📚 [Documentation](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md) | 🛠️ [CLI Usage](https://github.com/IngarsPoliters/ProvenancePass/tree/main/packages/cli)');
+    summaryLines.push('📚 [Documentation](https://provenancepass.com/docs/embedding) | 🛠️ [CLI Usage](https://provenancepass.com/docs/cli)');
     
     // Add summary to job output
     core.summary.addRaw(summaryLines.join('\n'));

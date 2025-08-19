@@ -46,7 +46,16 @@ interface VerificationSummary {
 
 export function createVerifyCommand(): Command {
   const cmd = new Command('verify')
-    .description('Verify passport signatures and validate artifact integrity')
+    .description(`Verify passport signatures and validate artifact integrity
+
+Examples:
+  pp verify document.pdf                                    # Single file
+  pp verify --glob "*.jpg"                                  # Multiple files
+  pp verify --json file.png                                # JSON output
+  pp verify file.png \\
+    --revocations https://data.provenancepass.com/revocations.json \\
+    --revocation-pubkey a1b2c3d4e5f6...                    # With revocation checking
+  pp verify --trust-bundle org-keys.json file.pdf          # With trust bundle`)
     .argument('[path]', 'Single file to verify (checks for embedded passport or .pp sidecar)')
     .option('--glob <pattern>', 'Glob pattern for multiple files')
     .option('--json', 'Output results in JSON format')
@@ -355,7 +364,7 @@ function findPassportFile(filePath: string): string | null {
 }
 
 async function fetchRevokedKeys(revocationsUrl?: string, revocationPubkey?: string): Promise<Set<string> | null> {
-  const url = revocationsUrl || 'https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json';
+  const url = revocationsUrl || 'https://data.provenancepass.com/revocations.json';
   
   try {
     const response = await request(url);

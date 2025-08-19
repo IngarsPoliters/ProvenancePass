@@ -2,7 +2,7 @@
   "version": "1.0",
   "last_updated": "2025-08-19T00:00:00Z",
   "authority": "ProvenancePass Development Team",
-  "feed_url": "https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json",
+  "feed_url": "https://data.provenancepass.com/revocations.json",
   "revoked_keys": [
     {
       "key_id": "compromised-test-key-001",

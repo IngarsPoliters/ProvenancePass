@@ -66,7 +66,7 @@ jobs:
           }
           
           message += `📊 **Summary**: ${total} files checked\n\n`;
-          message += '📚 [Learn more about Provenance Passports](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md)';
+          message += '📚 [Learn more about Provenance Passports](https://provenancepass.com/docs/embedding)';
           
           github.rest.issues.createComment({
             issue_number: context.issue.number,

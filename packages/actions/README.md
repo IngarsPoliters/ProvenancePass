@@ -33,7 +33,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `glob` | Glob pattern for files to verify | No | `**/*.{pdf,png,jpg,jpeg,docx}` |
-| `revocations_url` | URL for revocation list | No | [Default revocations.json](https://raw.githubusercontent.com/IngarsPoliters/ProvenancePass/main/docs/spec/revocations.json) |
+| `revocations_url` | URL for revocation list | No | [Default revocations.json](https://data.provenancepass.com/revocations.json) |
 | `manifest_url` | Manifest URL for DOCX pointer fallback | No | - |
 
 ## Outputs
@@ -173,10 +173,10 @@ npm install -g @provenancepass/cli failed
 
 ## Related Documentation
 
-- 📚 [Provenance Passport Specification](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/)
-- 🛠️ [CLI Usage Guide](https://github.com/IngarsPoliters/ProvenancePass/tree/main/packages/cli)
+- 📚 [Provenance Passport Specification](https://provenancepass.com/docs/)
+- 🛠️ [CLI Usage Guide](https://provenancepass.com/docs/cli)
 - 🔗 [C2PA Standard](https://c2pa.org/)
-- 📋 [Embedding Guide](https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/spec/embedding.md)
+- 📋 [Embedding Guide](https://provenancepass.com/docs/embedding)
 
 ## License
 
