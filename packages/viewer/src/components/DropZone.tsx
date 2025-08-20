@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { preloadVerifier } from '../lib/lazy-verifier'
 
 interface DropZoneProps {
   onFilesDropped: (files: File[]) => void
@@ -10,6 +11,8 @@ export function DropZone({ onFilesDropped }: DropZoneProps) {
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragOver(true)
+    // Preload verification engine when user starts dragging over
+    preloadVerifier()
   }, [])
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
@@ -47,6 +50,7 @@ export function DropZone({ onFilesDropped }: DropZoneProps) {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
+        onMouseEnter={() => preloadVerifier()}
       >
         <div className="dropzone-icon">📁</div>
         <h3>Drop files here to verify</h3>

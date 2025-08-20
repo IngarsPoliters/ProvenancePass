@@ -1,18 +1,22 @@
-import * as ed25519 from '@noble/ed25519'
 import type { ProvenancePassport } from '../types'
 
-// For now, skip signature verification in the browser due to SHA-512 complexity
-// This is a temporary workaround - in production we'd use a proper SHA-512 library
-let browserSha512Warned = false
-
-ed25519.etc.sha512Sync = (...messages: Uint8Array[]) => {
-  if (!browserSha512Warned) {
-    console.warn('Browser SHA-512 not implemented - signature verification disabled')
-    browserSha512Warned = true
+// Lazy import for noble/ed25519 to reduce initial bundle size
+let ed25519Module: any = null
+async function getEd25519() {
+  if (!ed25519Module) {
+    ed25519Module = await import('@noble/ed25519')
+    // Set up SHA-512 fallback for browser compatibility
+    if (!ed25519Module.etc.sha512Sync) {
+      ed25519Module.etc.sha512Sync = (...messages: Uint8Array[]) => {
+        console.warn('Browser SHA-512 not implemented - signature verification disabled')
+        return new Uint8Array(64)
+      }
+    }
   }
-  // Return a dummy hash that will make verification fail gracefully
-  return new Uint8Array(64)
+  return ed25519Module
 }
+
+// SHA-512 setup is now handled in the lazy loader above
 
 /**
  * Canonicalize JSON according to RFC 8785 JCS
@@ -54,10 +58,6 @@ export async function verifyPassportSignature(passport: ProvenancePassport): Pro
       return false
     }
 
-    // For now, temporarily return true for valid passport structure
-    // TODO: Implement proper browser-compatible Ed25519 verification
-    console.warn('Browser signature verification temporarily disabled - showing passport details only')
-    
     // Basic validation checks
     if (!signature.public_key || !signature.signature || !signature.key_id) {
       console.warn('Missing signature components')
@@ -69,6 +69,13 @@ export async function verifyPassportSignature(passport: ProvenancePassport): Pro
       return false
     }
 
+    // Lazy load Ed25519 for signature verification
+    const ed25519 = await getEd25519()
+    
+    // For now, temporarily return true for valid passport structure
+    // TODO: Implement proper browser-compatible Ed25519 verification
+    console.warn('Browser signature verification temporarily disabled - showing passport details only')
+    
     // Return true for now to allow viewing passport details
     // The signature validation will be properly implemented with a SHA-512 library
     return true

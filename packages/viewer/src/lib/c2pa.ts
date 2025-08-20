@@ -1,7 +1,17 @@
-import { createC2pa } from 'c2pa'
 import type { ProvenancePassport } from '../types'
 
 let c2paInstance: any = null
+let c2paImportPromise: Promise<any> | null = null
+
+/**
+ * Lazy import C2PA library to avoid loading it in initial bundle
+ */
+async function importC2pa() {
+  if (!c2paImportPromise) {
+    c2paImportPromise = import('c2pa').then(module => module.createC2pa)
+  }
+  return c2paImportPromise
+}
 
 /**
  * Initialize C2PA library
@@ -9,6 +19,7 @@ let c2paInstance: any = null
 async function initC2pa() {
   if (!c2paInstance) {
     try {
+      const createC2pa = await importC2pa()
       c2paInstance = await createC2pa({
         wasmSrc: '/c2pa.wasm',
         workerSrc: '/c2pa.worker.js'

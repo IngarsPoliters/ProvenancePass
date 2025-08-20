@@ -1,243 +1,115 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ProvenancePass - Cryptographic Provenance for Digital Assets</title>
-  <meta name="description" content="Secure your supply chain with cryptographically signed provenance. Track, verify, and trust your digital artifacts from creation to deployment.">
-  <meta name="keywords" content="provenance, cryptography, digital signatures, C2PA, supply chain security, build verification">
-  <meta property="og:title" content="ProvenancePass - Cryptographic Provenance for Digital Assets">
-  <meta property="og:description" content="Secure your supply chain with cryptographically signed provenance. Track, verify, and trust your digital artifacts.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://provenancepass.com">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="canonical" href="https://www.provenancepass.com/">
+  <title>ProvenancePass - Stop Digital Asset Tampering Forever</title>
+  <meta name="description" content="Military-grade cryptographic signatures for your builds, documents, and media. Prove authenticity, detect tampering, secure your supply chain in minutes."
+  <meta property="og:title" content="ProvenancePass — Stop Digital Asset Tampering Forever">
+  <meta property="og:description" content="Cryptographic proof your files haven't been altered. Sign, verify, automate in minutes.">
+  <meta property="og:image" content="https://www.provenancepass.com/assets/og.png">
+  <meta property="og:url" content="https://www.provenancepass.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  
   <style>
-    /* Reset and base styles */
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       color: #1a1a1a;
-      background: #ffffff;
+      background: #fff;
     }
-
-    /* Layout */
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-    .section { padding: 80px 0; }
-    .section.compact { padding: 60px 0; }
-
+    .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+    
     /* Header */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 0;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    .logo { 
-      font-size: 24px; 
-      font-weight: 700; 
-      color: #2563eb;
-      text-decoration: none;
-    }
-    .nav { display: flex; gap: 32px; }
-    .nav a { 
-      color: #4b5563; 
-      text-decoration: none; 
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    .nav a:hover { color: #2563eb; }
-
-    /* Hero section */
+    header { padding: 20px 0; border-bottom: 1px solid #e5e7eb; }
+    .logo { font-size: 24px; font-weight: 700; color: #2563eb; }
+    
+    /* Hero */
     .hero {
       text-align: center;
-      padding: 120px 0;
+      padding: 80px 0;
       background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
     }
-    .hero-content { max-width: 800px; margin: 0 auto; }
     .hero h1 {
-      font-size: 56px;
+      font-size: 48px;
       font-weight: 800;
       margin: 0 0 24px 0;
       color: #0f172a;
       line-height: 1.1;
     }
-    .hero .subtitle {
-      font-size: 20px;
+    .hero p {
+      font-size: 18px;
       color: #475569;
       margin: 0 0 40px 0;
-      line-height: 1.5;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .cta {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 40px 0 0 0;
-    }
-
+    
     /* Buttons */
+    .cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
     .btn {
       display: inline-block;
-      padding: 14px 28px;
+      padding: 12px 24px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
       font-size: 16px;
-      border: 2px solid transparent;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      transition: all 0.2s;
     }
     .btn.primary {
       background: #2563eb;
       color: white;
-      border-color: #2563eb;
     }
     .btn.primary:hover {
       background: #1d4ed8;
-      border-color: #1d4ed8;
       transform: translateY(-1px);
     }
     .btn.secondary {
       background: white;
       color: #2563eb;
-      border-color: #2563eb;
+      border: 2px solid #2563eb;
     }
     .btn.secondary:hover {
       background: #2563eb;
       color: white;
       transform: translateY(-1px);
     }
-
-    /* Benefits section */
-    .benefits {
-      padding: 80px 0;
-      background: #ffffff;
-    }
-    .benefits h2 {
+    
+    /* Features */
+    .features { padding: 80px 0; }
+    .features h2 {
       text-align: center;
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
-      margin: 0 0 16px 0;
+      margin: 0 0 48px 0;
       color: #0f172a;
     }
-    .benefits .subtitle {
-      text-align: center;
-      font-size: 18px;
-      color: #64748b;
-      margin: 0 0 60px 0;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+    .features-list { max-width: 600px; margin: 0 auto; }
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 32px;
     }
-    .benefits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
-      margin-top: 60px;
-    }
-    .benefit-card {
-      text-align: center;
-      padding: 40px 20px;
-    }
-    .benefit-icon {
-      font-size: 48px;
-      margin-bottom: 24px;
-      display: block;
-    }
-    .benefit-card h3 {
+    .feature-icon {
       font-size: 24px;
+      margin-right: 16px;
+      margin-top: 4px;
+    }
+    .feature h3 {
+      font-size: 20px;
       font-weight: 600;
-      margin: 0 0 16px 0;
+      margin: 0 0 8px 0;
       color: #0f172a;
     }
-    .benefit-card p {
-      color: #475569;
+    .feature p {
       margin: 0;
-      line-height: 1.6;
-    }
-
-    /* How it works */
-    .how-it-works {
-      padding: 80px 0;
-      background: #f8fafc;
-    }
-    .how-it-works h2 {
-      text-align: center;
-      font-size: 36px;
-      font-weight: 700;
-      margin: 0 0 60px 0;
-      color: #0f172a;
-    }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .step {
-      background: white;
-      padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      position: relative;
-    }
-    .step-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 48px;
-      height: 48px;
-      background: #2563eb;
-      color: white;
-      border-radius: 50%;
-      font-weight: 700;
-      font-size: 20px;
-      margin-bottom: 24px;
-    }
-    .step h3 {
-      font-size: 20px;
-      font-weight: 600;
-      margin: 0 0 16px 0;
-      color: #0f172a;
-    }
-    .step p {
       color: #475569;
-      margin: 0 0 20px 0;
     }
-    .step code {
-      background: #f1f5f9;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-family: "SF Mono", Monaco, "Inconsolata", "Roboto Mono", monospace;
-      font-size: 14px;
-      color: #1e293b;
-      display: inline-block;
-    }
-
-    /* CTA section */
-    .final-cta {
-      padding: 80px 0;
-      background: #0f172a;
-      text-align: center;
-    }
-    .final-cta h2 {
-      font-size: 36px;
-      font-weight: 700;
-      color: white;
-      margin: 0 0 16px 0;
-    }
-    .final-cta p {
-      font-size: 18px;
-      color: #cbd5e1;
-      margin: 0 0 40px 0;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
+    
     /* Footer */
     footer {
       padding: 40px 0;
@@ -249,117 +121,132 @@
       color: #cbd5e1;
       text-decoration: none;
     }
-    footer a:hover {
-      color: white;
-    }
-
-    /* Responsive design */
+    footer a:hover { color: white; }
+    
+    /* Responsive */
     @media (max-width: 768px) {
-      .hero h1 { font-size: 40px; }
-      .hero .subtitle { font-size: 18px; }
+      .hero h1 { font-size: 36px; }
       .cta { flex-direction: column; align-items: center; }
-      .benefits-grid { grid-template-columns: 1fr; }
-      .steps { grid-template-columns: 1fr; }
-      .nav { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <a href="/" class="logo">ProvenancePass</a>
-      <nav class="nav">
-        <a href="https://viewer.provenancepass.com">Viewer</a>
-        <a href="/docs.html">Docs</a>
-        <a href="https://github.com/IngarsPoliters/ProvenancePass">GitHub</a>
+  <header>
+    <div class="container">
+      <nav style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo">ProvenancePass</div>
+        <div style="display: flex; gap: 32px;">
+          <a href="/pricing.html" style="text-decoration: none; color: #475569; font-weight: 500;">Pricing</a>
+          <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" target="_blank" rel="noopener" style="text-decoration: none; color: #475569; font-weight: 500;">Docs</a>
+          <a href="https://viewer.provenancepass.com" target="_blank" rel="noopener" style="text-decoration: none; color: #475569; font-weight: 500;">Viewer</a>
+        </div>
       </nav>
-    </header>
-  </div>
+    </div>
+  </header>
 
   <section class="hero">
-    <div class="wrap">
-      <div class="hero-content">
-        <h1>Secure Your Digital Supply Chain</h1>
-        <p class="subtitle">Create cryptographically signed provenance records for your builds, documents, and media. Track every step from creation to deployment with tamper-proof verification.</p>
-        <div class="cta">
-          <a class="btn primary" href="https://viewer.provenancepass.com">Try Web Viewer</a>
-          <a class="btn secondary" href="https://github.com/IngarsPoliters/ProvenancePass">View on GitHub</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="benefits">
-    <div class="wrap">
-      <h2>Why ProvenancePass?</h2>
-      <p class="subtitle">Enterprise-grade cryptographic verification that scales from individual developers to Fortune 500 companies</p>
-      
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <span class="benefit-icon">🔐</span>
-          <h3>Cryptographically Secure</h3>
-          <p>Ed25519 digital signatures ensure tamper-proof verification. Each file is cryptographically bound to its provenance record, making forgery impossible.</p>
-        </div>
-        
-        <div class="benefit-card">
-          <span class="benefit-icon">🚀</span>
-          <h3>CI/CD Ready</h3>
-          <p>GitHub Actions integration, CLI tools, and web verification. Automate provenance creation in your build pipeline with zero friction.</p>
-        </div>
-        
-        <div class="benefit-card">
-          <span class="benefit-icon">🌐</span>
-          <h3>Industry Standards</h3>
-          <p>C2PA embedding for media files, DOCX integration for documents, and universal sidecar support. Works with your existing tools.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="how-it-works">
-    <div class="wrap">
-      <h2>How It Works</h2>
-      
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h3>Generate & Sign</h3>
-          <p>Create cryptographic keys and sign your builds, documents, or media files with tamper-proof provenance records.</p>
-          <code>pp wrap --run "npm run build"</code>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">2</div>
-          <h3>Embed & Distribute</h3>
-          <p>Optionally embed provenance directly into file metadata using C2PA standard, or keep as separate sidecar files.</p>
-          <code>pp embed --file image.png</code>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">3</div>
-          <h3>Verify & Trust</h3>
-          <p>Anyone can verify file authenticity using our web viewer, CLI tool, or integrate verification into their own systems.</p>
-          <code>pp verify document.pdf</code>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="final-cta">
-    <div class="wrap">
-      <h2>Ready to Secure Your Assets?</h2>
-      <p>Start with our free web viewer or dive into the CLI. ProvenancePass works with any file type and integrates with your existing workflow.</p>
+    <div class="container">
+      <h1>Stop Digital Asset Tampering Forever</h1>
+      <p><strong>Cryptographic proof that your files haven't been altered.</strong> Sign builds, documents, and media with military-grade Ed25519 signatures. Detect tampering instantly, prove authenticity legally, secure your supply chain in minutes.</p>
       <div class="cta">
-        <a class="btn primary" href="https://viewer.provenancepass.com">Launch Viewer</a>
-        <a class="btn secondary" href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md">5-Min Quickstart</a>
+        <a class="btn primary" href="https://viewer.provenancepass.com" target="_blank" rel="noopener">Verify Files Now — Free</a>
+        <a class="btn secondary" href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" target="_blank" rel="noopener">5-Minute Quickstart</a>
+        <a class="btn secondary" href="https://data.provenancepass.com/samples/pass/sidecar/document.txt" target="_blank" rel="noopener">📄 Get a Sample File</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>Why Fortune 500 Teams Choose ProvenancePass</h2>
+      <div class="features-list">
+        <div class="feature">
+          <div class="feature-icon">🛡️</div>
+          <div>
+            <h3>Impossible to Forge</h3>
+            <p><strong>Military-grade Ed25519 signatures</strong> make tampering mathematically impossible. Each file gets cryptographically bound proof - try to alter even one bit and verification fails instantly.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <h3>Deploy in Minutes, Not Months</h3>
+            <p><strong>Zero infrastructure setup.</strong> GitHub Actions, CLI tools, drag-and-drop verification. Your team is signing builds and detecting tampering in under 5 minutes.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🏭</div>
+          <div>
+            <h3>Works with Everything</h3>
+            <p><strong>Any file type, any workflow.</strong> C2PA standard for media, Office document embedding, sidecar files for builds. Integrates with tools you already use.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" style="background: #f8fafc;">
+    <div class="container">
+      <h2>Start Securing Your Supply Chain Today</h2>
+      <div class="features-list">
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <div>
+            <h3><a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md" style="color: #0f172a; text-decoration: none;">5-Minute Setup</a></h3>
+            <p><strong>Install CLI → Generate Keys → Sign Files → Done.</strong> Complete walkthrough gets you from zero to tamper-proof builds in under 5 minutes.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔄</div>
+          <div>
+            <h3><a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/ci.md" style="color: #0f172a; text-decoration: none;">Automate Everything</a></h3>
+            <p><strong>GitHub Actions ready-to-go.</strong> Copy-paste workflows for Jenkins, GitLab CI. Your builds get signed automatically - no manual steps.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🎯</div>
+          <div>
+            <h3><a href="https://viewer.provenancepass.com" style="color: #0f172a; text-decoration: none;">Verify Instantly</a></h3>
+            <p><strong>Drag. Drop. Verified.</strong> Web viewer works in any browser - no downloads, no accounts, no data leaves your device. Try it with any file right now.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" style="background:#f8fafc;">
+    <div class="container">
+      <h2>Try Sample Files</h2>
+      <div class="features-list">
+        <div class="feature">
+          <div class="feature-icon">🗂️</div>
+          <div>
+            <h3><a href="/samples/pass/document.txt" download>TXT + passport</a></h3>
+            <p>Download; then drop <code>document.txt</code> (and its <code>.passport.json</code>) into the <a href="https://viewer.provenancepass.com" target="_blank">Viewer</a>.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📄</div>
+          <div>
+            <h3><a href="/samples/pass/document.txt.passport.json" download>Sample Passport JSON</a></h3>
+            <p>See the complete provenance record with signature and metadata.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📋</div>
+          <div>
+            <h3><a href="/samples/docx/example.docx" download>Example Document</a></h3>
+            <p>Sample document for testing non-media workflows.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <footer>
-    <div class="wrap">
+    <div class="container">
       <p>© <span id="year"></span> ProvenancePass • 
-        <a href="/docs.html">Documentation</a> • 
+        <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/get-started.md">Documentation</a> • 
         <a href="https://github.com/IngarsPoliters/ProvenancePass">GitHub</a> • 
         <a href="https://github.com/IngarsPoliters/ProvenancePass/blob/main/docs/product/privacy.md">Privacy</a>
       </p>

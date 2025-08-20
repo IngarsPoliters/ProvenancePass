@@ -43,14 +43,24 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    target: 'es2020',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          c2pa: ['c2pa']
-        }
+          // Note: c2pa will be lazy loaded, so removed from manual chunks
+        },
+        // Optimize chunk naming for better caching
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
-    }
+    },
+    // Enable advanced minification using esbuild (faster than terser)
+    minify: 'esbuild',
+    // Report bundle size
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 100
   },
   define: {
     // Provide default revocation URL if not set
